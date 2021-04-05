@@ -1,12 +1,16 @@
 #ifndef HITTABLE_HH_INCLUDED
 #define HITTABLE_HH_INCLUDED
 #include "ray.h"
+#include "common.h"
+
+class material;
 
 struct hit_record
 {
   point3 p;
   // surface norm of the hit
   vec3 normal;
+  shared_ptr<material> mat_ptr;
   double t;
   bool front_face;
 
