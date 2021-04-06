@@ -54,7 +54,7 @@ class vec3
     return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
   }
 
-  inline static vec3 rand()
+  inline static vec3 random()
   {
     return vec3(random_double(), random_double(), random_double());
   }
