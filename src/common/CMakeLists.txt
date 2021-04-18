@@ -9,5 +9,6 @@ set(tracer_common_source
     "sphere.h"
     "camera.h"
     "material.h")
-add_library(tracer_common INTERFACE ${tracer_common_source})
+add_library(tracer_common INTERFACE)
+target_sources(tracer_common INTERFACE ${tracer_common_source})
 target_include_directories(tracer_common INTERFACE ".")
