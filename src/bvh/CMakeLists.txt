@@ -1,5 +1,7 @@
 
 add_executable(bvhHello "bvh.cpp")
+target_include_directories(bvhHello PUBLIC "../common")
+target_link_libraries(bvhHello tracer_common)
 
 enable_testing()
 add_executable(

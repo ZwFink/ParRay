@@ -40,7 +40,4 @@ inline double random_double(double min, double max)
   return min + (max-min)*random_double();
 }
 
-#include "ray.h"
-#include "vec3.h"
-
 #endif // COMMON_HH_INCLUDED

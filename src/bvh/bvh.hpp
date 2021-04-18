@@ -1,8 +1,26 @@
-#ifndef _H_BVH
-#define _H_BVH
+#ifndef __H_BVH
+#define __H_BVH
 
-//#include "vec3.h"
+#include "vec3.h"
+#include "hittable.h"
 #include "float.h"
+
+extern const int kNumPlaneSetNormals=7;
+
+class Extent
+{
+    public:
+    Extent();
+    void extendBy(const Extent &extents);
+    bool interset(const double *numberator, const double *denominator, double &tNear, double &tFar, int &planeIndex);
+
+    private:
+    double d[kNumPlaneSetNormals][2]; //the distance d values for each plane set normals
+    hittable *object;             //pointer contained by the volumn
+
+};
+
+
 
 /*
 class bvh
