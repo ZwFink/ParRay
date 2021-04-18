@@ -1,10 +1,34 @@
 #ifndef __H_BVH
 #define __H_BVH
+<<<<<<< HEAD
 
 #include "hittable.h"
 #include <float.h>
 
 const int kNumPlaneSetNormals=7;
+
+class Extent
+{
+    public:
+    Extent();
+    void extendBy(const Extent &extents);
+    bool interset(const double *numberator, const double *denominator, double &tNear, double &tFar, int &planeIndex);
+
+    private:
+    double d[kNumPlaneSetNormals][2]; //the distance d values for each plane set normals
+    hittable *object;             //pointer contained by the volumn
+
+};
+
+
+=======
+
+#include "vec3.h"
+#include "hittable.h"
+#include "float.h"
+>>>>>>> b5b6790fbfea68c862b10150d1a1fd558267835f
+
+extern const int kNumPlaneSetNormals=7;
 
 class Extent
 {

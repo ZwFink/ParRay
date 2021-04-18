@@ -32,4 +32,3 @@ bool Extent::interset(const double *numberator, const double *denominator, doubl
         }
         return true;    
 }
-
