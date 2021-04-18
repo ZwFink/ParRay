@@ -1,4 +1,5 @@
 #include <iostream>
+#include <omp.h>
 #include "common.h"
 
 #include "color.h"
@@ -6,6 +7,7 @@
 #include "sphere.h"
 #include "camera.h"
 #include "material.h"
+#include <cassert>
 
 hittable_list random_scene()
 {
@@ -109,9 +111,13 @@ int main()
 
   std :: cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
+  color *output_image = new color[image_height * image_width];
+  double tstart = omp_get_wtime();
+
+#pragma omp parallel for shared(output_image, cam, world), schedule(guided)
   for(int j = image_height - 1; j >= 0; j--)
     {
-      std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+      std::cerr << "\rScanlines remaining: " << j << ' ' << omp_get_thread_num() << std::flush;
       for(int i = 0; i < image_width; i++)
         {
           color pixel_color(0, 0, 0);
@@ -123,9 +129,13 @@ int main()
               ray r = cam.get_ray(u, v);
               pixel_color += ray_color(r, world, max_depth);
             }
-          write_color(std::cout, pixel_color, samples_per_pixel);
+          output_image[((image_height - 1 - j)*image_width + i)] = pixel_color;
         }
-
     }
+  for(int i = 0; i < image_height * image_width; i++)
+    write_color(std::cout, output_image[i], samples_per_pixel);
+
+  double tend = omp_get_wtime();
+  std::cerr << "Elapsed time: " << tend - tstart << "\n";
   std::cerr << "\nDone.\n";
 }
