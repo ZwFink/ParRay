@@ -7,6 +7,7 @@
 
 using std::sqrt;
 
+
 class vec3
 {
  public:
@@ -76,8 +77,9 @@ class vec3
 
 };
 
-using point3 = vec3;
-using color = vec3;
+typedef vec3 point3;
+typedef vec3 color;
+
 
 inline std::ostream& operator<<(std::ostream& out, const vec3 &v)
 {
