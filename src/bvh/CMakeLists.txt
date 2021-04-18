@@ -1,7 +1,5 @@
-
-add_executable(bvhHello "bvh.cpp")
-target_include_directories(bvhHello PUBLIC "../common")
-target_link_libraries(bvhHello tracer_common)
+add_library(bvhlib OBJECT "bvh.cpp")
+target_include_directories(bvhlib PUBLIC "../common/")
 
 enable_testing()
 add_executable(
@@ -11,7 +9,10 @@ add_executable(
 target_link_libraries(
   bvh_test
   gtest_main
+  bvhlib
 )
+target_include_directories(
+  bvh_test PUBLIC "../common")
 
 include(GoogleTest)
 gtest_discover_tests(bvh_test)

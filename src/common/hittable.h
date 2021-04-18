@@ -1,7 +1,6 @@
 #ifndef HITTABLE_HH_INCLUDED
 #define HITTABLE_HH_INCLUDED
 #include "ray.h"
-#include "common.h"
 
 class material;
 

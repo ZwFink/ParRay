@@ -1,10 +1,7 @@
 #include "bvh.hpp"
 #include <stdio.h>
-
-int main(int argc, char** argv){
-    printf("Hello from bvh\n");
-    return 0;
-}
+#include <stdint.h>
+#include <algorithm> //for swap function
 
 Extent::Extent(){
         for (uint8_t i = 0; i < kNumPlaneSetNormals; ++i)
@@ -35,4 +32,3 @@ bool Extent::interset(const double *numberator, const double *denominator, doubl
         }
         return true;    
 }
-
