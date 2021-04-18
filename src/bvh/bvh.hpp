@@ -1,11 +1,10 @@
 #ifndef __H_BVH
 #define __H_BVH
 
-#include "vec3.h"
 #include "hittable.h"
-#include "float.h"
+#include <float.h>
 
-extern const int kNumPlaneSetNormals=7;
+const int kNumPlaneSetNormals=7;
 
 class Extent
 {

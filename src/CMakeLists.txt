@@ -11,5 +11,7 @@ FetchContent_MakeAvailable(googletest)
 add_subdirectory("common")
 add_subdirectory("bvh")
 
+
 add_executable(tracer_marble_single_threaded  "marble_single_thread.cc")
+target_link_libraries(tracer_marble_single_threaded tracer_common)
 target_include_directories(tracer_marble_single_threaded PUBLIC "common")
