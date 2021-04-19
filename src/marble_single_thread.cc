@@ -136,6 +136,6 @@ int main()
     write_color(std::cout, output_image[i], samples_per_pixel);
 
   double tend = omp_get_wtime();
-  std::cerr << "Elapsed time: " << tend - tstart << "\n";
+  std::cerr << "\n\nElapsed time: " << tend - tstart << "\n";
   std::cerr << "\nDone.\n";
 }
