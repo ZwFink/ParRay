@@ -1,12 +1,12 @@
 #ifndef __H_BVH
 #define __H_BVH
 
-#include "hittable.h"
 #include "vec3.h"
 #include <float.h>
 #include <vector>
 
 const int kNumPlaneSetNormals = 7;
+
 
 class BBox 
 { 
@@ -30,7 +30,6 @@ public:
 
 public:
     double d[kNumPlaneSetNormals][2]; //the distance d values for each plane set normals
-    hittable *object;                 //pointer contained by the volumn
 };
 
 struct OctreeNode
@@ -54,11 +53,11 @@ class Octree
 {
 public:
     Octree(const Extent &sceneExtent);
+    void insert(OctreeNode*& node, const Extent* extents, BBox &nodeBox, int depth);
     OctreeNode *root = nullptr; // make unique son don't have to manage deallocation
+    BBox bbox;
 private:
     void deleteOctreeNode(OctreeNode *&node);
-    void insert(OctreeNode*& node, const Extent* extents, BBox &nodeBox, int depth);
-
 };
 
 void calculateChildBox(const vec3 &objectCentroid, const BBox &nodeBox, BBox &childBox, int &childIndex);

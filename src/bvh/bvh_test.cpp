@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include "boundable.h"
 #include "bvh.hpp"
 
 TEST(SanityCheck, testcase1)
@@ -66,4 +67,72 @@ TEST(OctreeNode, calculate_child_box)
     assert_calculate_childbox_right(vec3(0.001,0.001,-0.001), nodeBox, 3, BBox(vec3(0,0,-1), vec3(1,1,0)));
     assert_calculate_childbox_right(vec3(0.001,-0.001,-0.001), nodeBox, 1, BBox(vec3(0,-1,-1), vec3(1,0,0)));
     assert_calculate_childbox_right(vec3(0.001,-0.001,0.001), nodeBox, 5, BBox(vec3(0,-1,0), vec3(1,0,1)));
+}
+
+void assertBoundDistance(double expect[][2], double actual[][2], int size){
+   for(int i=0; i<size;i++) {
+       ASSERT_DOUBLE_EQ(expect[i][0],actual[i][0])<<" The distance vector["<<i<<"][0] is different";
+       ASSERT_DOUBLE_EQ(expect[i][1],actual[i][1])<<" The distance vector["<<i<<"][1] is different";
+   }
+}
+
+template<typename T>
+void assertArraysEqual(T* arrayA, T* arrayB, int size){
+    for(int i=0;i<size;i++){
+       ASSERT_EQ(arrayA[i], arrayB[i])<<"Element "<<i<<" is different";
+    }
+}
+
+
+
+TEST(Octree, insert_object)
+{
+    Extent sphere1Extent;
+    Sphere sphere1(vec3(3,3,3),1);
+    Sphere sphere2(vec3(-3,-3,-3),2);
+    Extent sphere1Ext;
+    Extent sphere2Ext;
+    vec3 origin(0);
+    vec3 normal[] = {vec3(1,0,0), vec3(0,1,0), vec3(0,0,1)};
+
+    sphere1.calculateBounds(normal, 3, origin, sphere1Ext);
+    sphere2.calculateBounds(normal, 3, origin, sphere2Ext);
+    double expectdFor1[][2] = {{2,4},{2,4},{2,4}};
+    double expectdFor2[][2] = {{-5,-1},{-5,-1},{-5,-1}};
+    assertBoundDistance(expectdFor1, sphere1Ext.d,3);
+    assertBoundDistance(expectdFor2, sphere2Ext.d,3);
+
+
+    Extent sceneExtent;
+    sceneExtent.d[0][0]=-10;
+    sceneExtent.d[0][1]=10;
+    sceneExtent.d[1][0]=-10;
+    sceneExtent.d[1][1]=10;
+    sceneExtent.d[2][0]=-10;
+    sceneExtent.d[2][1]=10;
+  
+    Octree tree(sceneExtent);
+    tree.insert(tree.root, &sphere1Ext, tree.bbox, 0);
+    ASSERT_TRUE(tree.root->isLeaf);
+    ASSERT_EQ(1,tree.root->nodeExtentsList.size());
+    ASSERT_EQ(&sphere1Ext, tree.root->nodeExtentsList[0]);
+    ASSERT_EQ(nullptr,tree.root->child[0]);
+
+    tree.insert(tree.root, &sphere2Ext, tree.bbox, 0);
+    ASSERT_FALSE(tree.root->isLeaf);
+    ASSERT_EQ(0, tree.root->nodeExtentsList.size());
+
+    OctreeNode *expected[7]={nullptr};
+//    assertArraysEqual<OctreeNode*>(expected, tree.root->child,7);
+    ASSERT_NE(nullptr, tree.root->child[0]);
+    ASSERT_EQ(nullptr, tree.root->child[1]);
+    ASSERT_EQ(nullptr, tree.root->child[2]);
+    ASSERT_EQ(nullptr, tree.root->child[3]);
+    ASSERT_EQ(nullptr, tree.root->child[4]);
+    ASSERT_EQ(nullptr, tree.root->child[5]);
+    ASSERT_EQ(nullptr, tree.root->child[6]);
+    ASSERT_NE(nullptr, tree.root->child[7]);
+
+    ASSERT_EQ(&sphere1Ext, tree.root->child[7]->nodeExtentsList[0]);
+    ASSERT_EQ(&sphere2Ext, tree.root->child[0]->nodeExtentsList[0]);
 }

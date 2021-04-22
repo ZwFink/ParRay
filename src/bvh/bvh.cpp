@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <algorithm> //for swap function
+#include "boundable.h"
 
 BBox::BBox(vec3 min, vec3 max){
     bounds[0]=min;
@@ -74,8 +75,8 @@ Octree::Octree(const Extent &sceneExtent)
         sceneExtent.d[0][0] + sceneExtent.d[0][1],
         sceneExtent.d[1][0] + sceneExtent.d[1][1],
         sceneExtent.d[2][0] + sceneExtent.d[2][1]);
-   // bbox[0] = (minPlusMax - maxDiff) * 0.5;
-   // bbox[1] = (minPlusMax + maxDiff) * 0.5;
+    bbox.bounds[0] = (minPlusMax - maxDiff) * 0.5;
+    bbox.bounds[1] = (minPlusMax + maxDiff) * 0.5;
     root = new OctreeNode;
 }
 
