@@ -135,4 +135,17 @@ TEST(Octree, insert_object)
 
     ASSERT_EQ(&sphere1Ext, tree.root->child[7]->nodeExtentsList[0]);
     ASSERT_EQ(&sphere2Ext, tree.root->child[0]->nodeExtentsList[0]);
+
+    vec3_eq(vec3(-10,-10,-10),tree.bbox.bounds[0]);
+    vec3_eq(vec3(10,10,10),tree.bbox.bounds[1]);
+
+    //insert a third sphere in the same child box as sphere1
+    Sphere sphere3(vec3(2,2,2),0.2);
+    Extent sphere3Ext;
+    sphere3.calculateBounds(normal, 3, origin, sphere3Ext);
+    tree.insert(tree.root, &sphere3Ext, tree.bbox, 0);
+    ASSERT_EQ(0, tree.root->child[7]->nodeExtentsList.size());
+    ASSERT_EQ(1, tree.root->child[7]->child[0]->child[7]->nodeExtentsList.size());
+    ASSERT_EQ(&sphere1Ext, tree.root->child[7]->child[0]->child[7]->nodeExtentsList[0]);
+    ASSERT_EQ(&sphere3Ext, tree.root->child[7]->child[0]->child[0]->nodeExtentsList[0]);
 }
