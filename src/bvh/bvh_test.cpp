@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "boundable.h"
 #include "bvh.hpp"
+#include "ray.h"
 
 TEST(SanityCheck, testcase1)
 {
@@ -83,7 +84,23 @@ void assertArraysEqual(T* arrayA, T* arrayB, int size){
     }
 }
 
+void assert_childbox_at_index_correct(const BBox& bbox, const int childIndex, const BBox& expectedBox){
+    BBox actualChildBox;
+    childBox_at_index(bbox, childIndex, actualChildBox);
+    box_eq(expectedBox, actualChildBox);
+}
 
+TEST(Octree, calculate_childbox_at_index){
+    BBox bBox = BBox(vec3(-1), vec3(1));
+    assert_childbox_at_index_correct(bBox, 0, BBox(vec3(-1),vec3(0)));
+    assert_childbox_at_index_correct(bBox, 2, BBox(vec3(-1,0,-1),vec3(0,1,0)));
+    assert_childbox_at_index_correct(bBox, 6, BBox(vec3(-1,0,0),vec3(0,1,1)));
+    assert_childbox_at_index_correct(bBox, 4, BBox(vec3(-1,-1,0),vec3(0,0,1)));
+    assert_childbox_at_index_correct(bBox, 1, BBox(vec3(0,-1,-1),vec3(1,0,0)));
+    assert_childbox_at_index_correct(bBox, 3, BBox(vec3(0,0,-1),vec3(1,1,0)));
+    assert_childbox_at_index_correct(bBox, 7, BBox(vec3(0),vec3(1)));
+    assert_childbox_at_index_correct(bBox, 5, BBox(vec3(0,-1,0),vec3(1,0,1)));
+}
 
 TEST(Octree, insert_object)
 {
@@ -148,4 +165,133 @@ TEST(Octree, insert_object)
     ASSERT_EQ(1, tree.root->child[7]->child[0]->child[7]->nodeExtentsList.size());
     ASSERT_EQ(&sphere1Ext, tree.root->child[7]->child[0]->child[7]->nodeExtentsList[0]);
     ASSERT_EQ(&sphere3Ext, tree.root->child[7]->child[0]->child[0]->nodeExtentsList[0]);
+}
+
+TEST(Octree, bottom_up_build){
+    Extent sphere1Extent;
+    vec3 origin(0);
+    vec3 normal[] = {vec3(1,0,0), vec3(0,1,0), vec3(0,0,1)};
+
+    Sphere sphere1(vec3(3,3,3),1);
+    Sphere sphere2(vec3(-3,-3,-3),2);
+    Sphere sphere3(vec3(2,2,2),0.2);
+    Extent sphere1Ext;
+    Extent sphere2Ext;
+    Extent sphere3Ext;
+    sphere1.calculateBounds(normal, 3, origin, sphere1Ext);
+    sphere2.calculateBounds(normal, 3, origin, sphere2Ext);
+    sphere3.calculateBounds(normal, 3, origin, sphere3Ext);
+
+    Extent sceneExtent;
+    sceneExtent.d[0][0]=-10;
+    sceneExtent.d[0][1]=10;
+    sceneExtent.d[1][0]=-10;
+    sceneExtent.d[1][1]=10;
+    sceneExtent.d[2][0]=-10;
+    sceneExtent.d[2][1]=10;
+ 
+    Octree tree(sceneExtent);
+    tree.insert(tree.root, &sphere1Ext, tree.bbox, 0);
+    tree.insert(tree.root, &sphere2Ext, tree.bbox, 0);
+    tree.insert(tree.root, &sphere3Ext, tree.bbox, 0);
+
+    tree.build(tree.root, tree.bbox);
+
+    {
+        Extent expectedBox;
+        expectedBox.d[0][0] = 2;// {{2,5},{2,5},{2,5}};
+        expectedBox.d[0][1] = 4;
+        expectedBox.d[1][0] = 2;
+        expectedBox.d[1][1] = 4;
+        expectedBox.d[2][0] = 2;
+        expectedBox.d[2][1] = 4;
+        assertBoundDistance(expectedBox.d, tree.root->child[7]->child[0]->child[7]->currentNodeExtent.d, 3);
+    }
+    {
+        Extent expectedBox;
+        expectedBox.d[0][0] = -5;// {{2,5},{2,5},{2,5}};
+        expectedBox.d[0][1] = -1;
+        expectedBox.d[1][0] = -5;
+        expectedBox.d[1][1] = -1;
+        expectedBox.d[2][0] = -5;
+        expectedBox.d[2][1] = -1;
+        assertBoundDistance(expectedBox.d, tree.root->child[0]->currentNodeExtent.d, 3);
+    }
+    {
+        //test the root box
+        Extent expectedBox;
+        expectedBox.d[0][0] = -5;
+        expectedBox.d[0][1] = 4;
+        expectedBox.d[1][0] = -5;
+        expectedBox.d[1][1] = 4;
+        expectedBox.d[2][0] = -5;
+        expectedBox.d[2][1] = 4;
+        assertBoundDistance(expectedBox.d, tree.root->currentNodeExtent.d, 3);
+    }
+    ASSERT_EQ(&sphere1Ext, tree.root->child[7]->child[0]->child[7]->nodeExtentsList[0]);
+    ASSERT_EQ(&sphere3Ext, tree.root->child[7]->child[0]->child[0]->nodeExtentsList[0]);
+}
+
+TEST(bvh, create_BVH_1_object){
+    std::vector<std::unique_ptr<Sphere>> sceneObjects;
+    Sphere sphere1(vec3(3,3,3),1);
+    Sphere sphere2(vec3(-3,-3,-3),2);
+    Sphere sphere3(vec3(2,2,2),0.2);
+    sceneObjects.emplace_back(new Sphere(vec3(3,3,3), 1));
+    BVH bvh(sceneObjects);
+    ASSERT_TRUE(bvh.tree!=nullptr);
+    ASSERT_EQ(1,bvh.tree->root->nodeExtentsList.size());
+    ASSERT_EQ(true,bvh.tree->root->isLeaf);
+    ASSERT_EQ(1,bvh.tree->root->nodeExtentsList[0]->object->r);
+    vec3_eq(bvh.tree->root->nodeExtentsList[0]->object->center, vec3(3));
+
+    hit_record hitRecord;
+
+    const ray ray_N(vec3(0),vec3(1,0,0));
+    Sphere* hitObject = nullptr;
+    bool hitResult = bvh.intersect(ray_N, hitObject, hitRecord);
+    ASSERT_EQ(false, hitResult);
+
+    const ray ray_E(vec3(0),vec3(0,1,0));
+    hitResult = bvh.intersect(ray_E, hitObject, hitRecord);
+    ASSERT_EQ(false, hitResult);
+
+    const ray ray_diagonal(vec3(0), vec3(sqrt(3)/3));
+    hitResult = bvh.intersect(ray_diagonal, hitObject, hitRecord);
+    ASSERT_EQ(true, hitResult);
+    sceneObjects.clear();
+}
+
+
+TEST(bvh, create_BVH_1_object_b){
+    std::vector<std::unique_ptr<Sphere>> sceneObjects;
+    Sphere sphere1(vec3(3,0,0),1);
+    sceneObjects.emplace_back(new Sphere(vec3(3,0,0), 1));
+    BVH bvh(sceneObjects);
+    ASSERT_TRUE(bvh.tree!=nullptr);
+    ASSERT_EQ(1,bvh.tree->root->nodeExtentsList.size());
+    ASSERT_EQ(true,bvh.tree->root->isLeaf);
+    ASSERT_EQ(1,bvh.tree->root->nodeExtentsList[0]->object->r);
+    vec3_eq(bvh.tree->root->nodeExtentsList[0]->object->center, vec3(3,0,0));
+
+    hit_record hitRecord;
+
+    const ray ray_N(vec3(0),vec3(1,0,0));
+    Sphere* hitObject = nullptr;
+    bool hitResult = bvh.intersect(ray_N, hitObject, hitRecord);
+    ASSERT_EQ(true, hitResult);
+
+    const ray ray_E(vec3(0),vec3(0,1,0));
+    hitResult = bvh.intersect(ray_E, hitObject, hitRecord);
+    ASSERT_EQ(false, hitResult);
+
+    const ray ray_diagonal(vec3(0), vec3(sqrt(3)/3));
+    hitResult = bvh.intersect(ray_diagonal, hitObject, hitRecord);
+    ASSERT_EQ(false, hitResult);
+
+    const ray ray_tangential(vec3(0), vec3(sqrt(8)/3,1/3,0));
+    hitResult = bvh.intersect(ray_tangential, hitObject, hitRecord);
+    ASSERT_EQ(true, hitResult);
+    
+    sceneObjects.clear();
 }

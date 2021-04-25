@@ -4,8 +4,9 @@
 #include "vec3.h"
 #include <float.h>
 #include <vector>
-
-const int kNumPlaneSetNormals = 7;
+#include "ray.h"
+#include "boundable.h"
+#include "hittable.h"
 
 
 class BBox 
@@ -19,18 +20,6 @@ public:
     const vec3 operator [] (bool i) const { return bounds[i]; } 
     vec3 bounds[2] = {vec3(DBL_MIN), vec3(DBL_MAX)}; 
 }; 
-
-class Extent
-{
-public:
-    Extent();
-    void extendBy(const Extent &extents);
-    bool interset(const double *numberator, const double *denominator, double &tNear, double &tFar, int &planeIndex);
-    vec3 centroid() const;
-
-public:
-    double d[kNumPlaneSetNormals][2]; //the distance d values for each plane set normals
-};
 
 struct OctreeNode
 {
@@ -53,13 +42,43 @@ class Octree
 {
 public:
     Octree(const Extent &sceneExtent);
+    void insert(const Extent * extent);
     void insert(OctreeNode*& node, const Extent* extents, BBox &nodeBox, int depth);
     OctreeNode *root = nullptr; // make unique son don't have to manage deallocation
+    void build(OctreeNode*& node, const BBox &bbox);
+    void build();
     BBox bbox;
 private:
     void deleteOctreeNode(OctreeNode *&node);
 };
 
+class BVH{
+    public:
+    BVH(std::vector<std::unique_ptr<Sphere>>& scene);
+    ~BVH();
+    bool intersect(const ray &ray, Sphere* &hit_object, hit_record &hitRecord);
+    Octree *tree = nullptr; 
+    private:
+    static const vec3 planeSetNormals[kNumPlaneSetNormals];
+    std::vector<Extent> extentList;
+};
+
+/**
+ * @brief Divide the node box into 8 child boxes. Assign the object to one of them based on the relative
+ * positions of node box centroid and object centroid. 
+ * @param[out] childIndex reference to output childIndex corresponding to the assigned childBox
+ * @param[out] childBox reference to output childBox
+ * @param[in] objectCentroid the object centroid
+ * @param[in] nodeBox the bounding box of the current node
+ */
 void calculateChildBox(const vec3 &objectCentroid, const BBox &nodeBox, BBox &childBox, int &childIndex);
+
+/**
+ * @brief Calculate the child bounding box at child index
+ * @param[in] parentBox the parent bounding box
+ * @param[in] childIndex the child box index from 0-7
+ * @param[out] childBox the child box
+ */
+void childBox_at_index(const BBox &parentBox, int childIndex, BBox &childBox);
 #endif
 

@@ -1,6 +1,11 @@
 add_library(bvhlib OBJECT  "boundable.cpp" "bvh.cpp")
 target_include_directories(bvhlib PUBLIC "../common/")
 
+add_executable(sphere_bvh_single_threaded "sphere_bvh.cpp")
+target_include_directories(sphere_bvh_single_threaded PUBLIC "../common/")
+target_link_libraries(sphere_bvh_single_threaded bvhlib tracer_common)
+
+
 enable_testing()
 add_executable(
   bvh_test 
