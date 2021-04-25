@@ -25,7 +25,6 @@ class hittable
  public:
   // Is there a t_min < t < t_max such that ray's P(t) intersects with the object?
   virtual bool hit(const ray&r, double t_min, double t_max, hit_record& rec) const = 0;
-
 };
 
 

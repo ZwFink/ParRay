@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "hittable.h"
+#include "vec3.h"
 
 struct hit_record;
 
