@@ -74,6 +74,8 @@ void Sphere::calculateBounds(const vec3 normalPlanes[], const int planeSize, con
 }
 
 bool Sphere::hit(const ray& ray, const double t_min, const double t_max, hit_record &rec) const{
+    vec3 test2 = ray.origin();
+    vec3 test1 = this->center;
    vec3 oc = ray.origin() - this->center;
    auto a = ray.direction().length_squared();
    auto half_b = dot(oc, ray.direction());

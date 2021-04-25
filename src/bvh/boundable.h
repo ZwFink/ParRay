@@ -20,7 +20,7 @@ public:
 
 public:
     double d[kNumPlaneSetNormals][2]; //the distance d values for each plane set normals
-    Sphere *object;
+    std::shared_ptr<Sphere> object;
 };
 
 class Boundable{
@@ -34,12 +34,12 @@ class Boundable{
     virtual void calculateBounds(const vec3 normalPlanes[], const int planeSize, const vec3 origin, Extent &outputExtent)=0;
 };
 
-class Sphere: public Boundable, public hittable{
+class Sphere: public Boundable{
     public:
     Sphere(vec3 center, double r);
     Sphere(vec3 center, double r, shared_ptr<material> material);
     void calculateBounds(const vec3 normalPlanes[], const int planeSize, const vec3 origin, Extent &outputExtent) override;
-    bool hit(const ray& ray, double t_min, double t_max, hit_record &rec) const override;
+    bool hit(const ray& ray, double t_min, double t_max, hit_record &rec) const;
     vec3 center;
     std::shared_ptr<material> mat_ptr;
     double r;

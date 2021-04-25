@@ -54,9 +54,9 @@ private:
 
 class BVH{
     public:
-    BVH(std::vector<std::unique_ptr<Sphere>>& scene);
+    BVH(std::vector<std::shared_ptr<Sphere>>& scene);
     ~BVH();
-    bool intersect(const ray &ray, Sphere* &hit_object, hit_record &hitRecord);
+    bool intersect(const ray &ray, std::shared_ptr<Sphere> hit_object, hit_record &hitRecord);
     Octree *tree = nullptr; 
     private:
     static const vec3 planeSetNormals[kNumPlaneSetNormals];

@@ -233,10 +233,7 @@ TEST(Octree, bottom_up_build){
 }
 
 TEST(bvh, create_BVH_1_object){
-    std::vector<std::unique_ptr<Sphere>> sceneObjects;
-    Sphere sphere1(vec3(3,3,3),1);
-    Sphere sphere2(vec3(-3,-3,-3),2);
-    Sphere sphere3(vec3(2,2,2),0.2);
+    std::vector<std::shared_ptr<Sphere>> sceneObjects;
     sceneObjects.emplace_back(new Sphere(vec3(3,3,3), 1));
     BVH bvh(sceneObjects);
     ASSERT_TRUE(bvh.tree!=nullptr);
@@ -248,7 +245,7 @@ TEST(bvh, create_BVH_1_object){
     hit_record hitRecord;
 
     const ray ray_N(vec3(0),vec3(1,0,0));
-    Sphere* hitObject = nullptr;
+    shared_ptr<Sphere> hitObject(nullptr);
     bool hitResult = bvh.intersect(ray_N, hitObject, hitRecord);
     ASSERT_EQ(false, hitResult);
 
@@ -264,8 +261,7 @@ TEST(bvh, create_BVH_1_object){
 
 
 TEST(bvh, create_BVH_1_object_b){
-    std::vector<std::unique_ptr<Sphere>> sceneObjects;
-    Sphere sphere1(vec3(3,0,0),1);
+    std::vector<std::shared_ptr<Sphere>> sceneObjects;
     sceneObjects.emplace_back(new Sphere(vec3(3,0,0), 1));
     BVH bvh(sceneObjects);
     ASSERT_TRUE(bvh.tree!=nullptr);
@@ -277,7 +273,7 @@ TEST(bvh, create_BVH_1_object_b){
     hit_record hitRecord;
 
     const ray ray_N(vec3(0),vec3(1,0,0));
-    Sphere* hitObject = nullptr;
+    std::shared_ptr<Sphere> hitObject(nullptr);
     bool hitResult = bvh.intersect(ray_N, hitObject, hitRecord);
     ASSERT_EQ(true, hitResult);
 
