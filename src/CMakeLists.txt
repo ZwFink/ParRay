@@ -10,6 +10,7 @@ FetchContent_MakeAvailable(googletest)
 
 add_subdirectory("common")
 add_subdirectory("bvh")
+add_subdirectory("data_porting")
 
 
 add_executable(tracer_marble_single_threaded  "marble_single_thread.cc")
