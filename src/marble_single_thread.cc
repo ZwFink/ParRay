@@ -96,7 +96,7 @@ int main()
   const auto aspect_ratio = 3.0 / 2.0;
   const int image_width = 1200;
   const int image_height = static_cast<int>(image_width / aspect_ratio);
-  const int samples_per_pixel = 500;
+  const int samples_per_pixel = 10;
   const int max_depth = 50;
 
   // World
@@ -114,10 +114,12 @@ int main()
   color *output_image = new color[image_height * image_width];
   double tstart = omp_get_wtime();
 
-#pragma omp parallel for shared(output_image, cam, world), schedule(guided)
+  omp_set_num_threads(24);
+  #pragma omp parallel for shared(output_image, cam, world), schedule(dynamic)
   for(int j = image_height - 1; j >= 0; j--)
     {
-      std::cerr << "\rScanlines remaining: " << j << ' ' << omp_get_thread_num() << std::flush;
+      // std::cerr << "\rScanlines remaining: " << j << ' ' << omp_get_thread_num() << std::endl;
+      
       for(int i = 0; i < image_width; i++)
         {
           color pixel_color(0, 0, 0);
@@ -132,10 +134,10 @@ int main()
           output_image[((image_height - 1 - j)*image_width + i)] = pixel_color;
         }
     }
+  double tend = omp_get_wtime();
   for(int i = 0; i < image_height * image_width; i++)
     write_color(std::cout, output_image[i], samples_per_pixel);
 
-  double tend = omp_get_wtime();
   std::cerr << "\n\nElapsed time: " << tend - tstart << "\n";
   std::cerr << "\nDone.\n";
 }
