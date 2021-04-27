@@ -67,18 +67,56 @@ void ShapeDataIO::write(std::string fileName, json& j){
     file.close();
 }
 
-
-vec3 deserialize_location(json &j){
-    return vec3(j[''])
+vec3 deserialize_location(const json &j){
+    return vec3(j["x"].get<double>(),
+    j["y"].get<double>(),
+    j["z"].get<double>());
 }
 
-std::vector<shared_ptr<sphere>> ShapeDataIO::deserialize(json &j){
+color deserialize_color(const json &j){
+    return color(j["r"].get<double>(),j["g"].get<double>(),j["b"].get<double>());
+}
+
+std::shared_ptr<metal> deserialize_metal(const json &j){
+    color c = deserialize_color(j["color"]);
+    double fuzz = j["fuzz"].get<double>();
+    return make_shared<metal>(c, fuzz);
+}
+
+std::shared_ptr<dielectric> deserialize_dielectric(const json &j){
+    double refraction_index = j["refraction_index"].get<double>();
+    return make_shared<dielectric>(refraction_index);
+}
+
+std::shared_ptr<lambertian> deserialize_lambertian(const json &j){
+    color c = deserialize_color(j["color"]);
+    return make_shared<lambertian>(c);
+}
+
+std::shared_ptr<material> deserialize_material(const json &j){
+   std::string type = j["type"].get<std::string>();
+   if(type.compare("lambertian")==0){
+       return std::dynamic_pointer_cast<material>(deserialize_lambertian(j));
+   }else if(type.compare("dielectric")==0){
+       return std::dynamic_pointer_cast<dielectric>(deserialize_dielectric(j));
+   }else if(type.compare("metal")==0){
+       return std::dynamic_pointer_cast<metal>(deserialize_metal(j));
+   }else{
+       std::cerr<<"Unknown material type"<<std::endl;
+   }
+}
+
+std::shared_ptr<sphere> deserialize_sphere(const json &j){
+    vec3 location = deserialize_location(j["location"]);
+    std::shared_ptr<material> m = deserialize_material(j["material"]);
+    double radius = j["radius"].get<double>();
+    return make_shared<sphere>(location, radius, m);
+}
+
+std::vector<shared_ptr<sphere>> ShapeDataIO::deserialize_spheres(const json &j){
     std::vector<shared_ptr<sphere>> container;
-    for(auto &e: j["spheres"]){
-
+    for(const auto &e:j["spheres"]){
+        container.push_back(deserialize_sphere(e["sphere"]));
     }
-    
-
+    return container;
 }
-
-

@@ -50,4 +50,20 @@ TEST(serializing, sphere){
     ASSERT_EQ(expected, actual);
 }
 
+TEST(deserializing, sphere){
+    ShapeDataIO io;
+    std::string input = "{\"spheres\":[{\"sphere\":{\"location\":{\"x\":0.0,\"y\":-1000.0,\"z\":0.0},\"material\":{\"color\":{\"b\":0.5,\"g\":0.6,\"r\":0.7},\"type\":\"lambertian\"},\"radius\":1000.0}}]}";
+    nlohmann::json j = nlohmann::json::parse(input);
+    std::vector<shared_ptr<sphere>> parsed = io.deserialize_spheres(j);
+    ASSERT_EQ(1,parsed.size());
+    ASSERT_DOUBLE_EQ(0, parsed[0]->center.x());
+    ASSERT_DOUBLE_EQ(-1000, parsed[0]->center.y());
+    ASSERT_DOUBLE_EQ(0, parsed[0]->center.z());
+    ASSERT_TRUE(std::dynamic_pointer_cast<lambertian>(parsed[0]->mat_ptr)!=nullptr);
+    ASSERT_DOUBLE_EQ(0.7, std::dynamic_pointer_cast<lambertian>(parsed[0]->mat_ptr)->albedo.x());
+    ASSERT_DOUBLE_EQ(0.6, std::dynamic_pointer_cast<lambertian>(parsed[0]->mat_ptr)->albedo.y());
+    ASSERT_DOUBLE_EQ(0.5, std::dynamic_pointer_cast<lambertian>(parsed[0]->mat_ptr)->albedo.z());
+    ASSERT_DOUBLE_EQ(1000, parsed[0]->radius);
+}
+
 

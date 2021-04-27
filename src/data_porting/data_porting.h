@@ -16,7 +16,7 @@ public:
     nlohmann::json serialize(const color &c);
     nlohmann::json serialize_location(const vec3 &location);
     void write(std::string fileName, nlohmann::json &j);
-    std::vector<shared_ptr<sphere>> deserialize(nlohmann::json &json);
+    std::vector<shared_ptr<sphere>> deserialize_spheres(const nlohmann::json &j);
 };
 
 #endif
