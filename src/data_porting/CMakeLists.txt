@@ -13,13 +13,19 @@ endif()
 #target_link_libraries(foo PRIVATE nlohmann_json::nlohmann_json)
 
 add_library(shapeio OBJECT "data_porting.cpp")
-target_link_libraries(shapeio PRIVATE nlohmann_json::nlohmann_json)
-target_include_directories(shapeio PRIVATE "../common/")
+target_link_libraries(shapeio PRIVATE nlohmann_json::nlohmann_json bvhlib)
+target_include_directories(shapeio PRIVATE "../common/" "../bvh")
 
 add_executable(shapeio_main "data_main.cpp")
-target_link_libraries(shapeio_main PRIVATE shapeio tracer_common)
-target_include_directories(shapeio_main PRIVATE "../common/")
+target_link_libraries(shapeio_main PRIVATE shapeio tracer_common bvhlib)
+target_include_directories(shapeio_main PRIVATE "../common/" "../bvh")
 target_link_libraries(shapeio_main PRIVATE nlohmann_json::nlohmann_json)
+
+add_executable(gen_random_scene "sphere_gen.cpp")
+target_link_libraries(gen_random_scene  PRIVATE shapeio tracer_common bvhlib)
+target_include_directories(gen_random_scene  PRIVATE "../common/" "../bvh")
+target_link_libraries(gen_random_scene  PRIVATE nlohmann_json::nlohmann_json)
+
 
 enable_testing()
 add_executable(
@@ -32,9 +38,11 @@ target_link_libraries(
     shapeio
     tracer_common
     nlohmann_json::nlohmann_json
+    bvhlib
 )
 target_include_directories(
     data_porting_test PRIVATE "../common"
+    "../bvh"
 )
 include(GoogleTest)
 gtest_discover_tests(data_porting_test)

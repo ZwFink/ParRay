@@ -6,6 +6,7 @@
 #include "color.h"
 #include <fstream>
 #include <iomanip>
+#include "boundable.h"
 
 using json = nlohmann::json;
 
@@ -44,9 +45,9 @@ json ShapeDataIO::serialize(color const &c){
 
 json ShapeDataIO::serialize(std::shared_ptr<sphere> &sphere){
     json output;
-    output["location"]=serialize_location(sphere->center);
-    output["material"]=serialize(sphere->mat_ptr);
-    output["radius"]=sphere->radius;
+    output["sphere"]["location"]=serialize_location(sphere->center);
+    output["sphere"]["material"]=serialize(sphere->mat_ptr);
+    output["sphere"]["radius"]=sphere->radius;
     return output;
 }
 
@@ -119,4 +120,28 @@ std::vector<shared_ptr<sphere>> ShapeDataIO::deserialize_spheres(const json &j){
         container.push_back(deserialize_sphere(e["sphere"]));
     }
     return container;
+}
+
+std::shared_ptr<Sphere> deserialize_Sphere(const json &j){
+    vec3 location = deserialize_location(j["location"]);
+    std::shared_ptr<material> m = deserialize_material(j["material"]);
+    double radius = j["radius"].get<double>();
+    return make_shared<Sphere>(location, radius, m);
+}
+
+std::vector<shared_ptr<Sphere>> ShapeDataIO::deserialize_Spheres(const nlohmann::json &j){
+    std::vector<shared_ptr<Sphere>> container;
+    for(const auto &e:j["spheres"]){
+        container.push_back(deserialize_Sphere(e["sphere"]));
+    }
+    return container;
+}
+
+json ShapeDataIO::read(std::string fileName){
+    json j;
+    std::ifstream file;
+    file.open(fileName);
+    file>>j;
+    file.close();
+    return j;
 }
