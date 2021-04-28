@@ -3,6 +3,11 @@
 #include <nlohmann/json.hpp>
 #include "material.h"
 
+
+bool fequals(double a, double b){
+    return fabs(a-b)<0.001;
+}
+
 int main(int argc, char **argv)
 {
     ShapeDataIO io;
@@ -21,5 +26,18 @@ int main(int argc, char **argv)
 
     auto json = io.serialize(spheres);
     io.write("sphere.data",json);
+    const nlohmann::json readJson = io.read("sphere.data");
+    auto readSpheres = io.deserialize_Spheres(readJson);
+
+    for(int i=0; i<3;i++){
+        if(
+           !(fequals(readSpheres[i]->center.x(),spheres[i]->center.x()) &&
+           fequals(readSpheres[i]->center.y(),spheres[i]->center.y()) &&
+           fequals(readSpheres[i]->center.z(),spheres[i]->center.z()) &&
+           fequals(readSpheres[i]->r,spheres[i]->radius))){
+               std::cout<<"Failed test"<<std::endl;
+           }
+    }
+    
     return 0;
 }
