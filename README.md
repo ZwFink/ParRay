@@ -39,3 +39,10 @@ sudo apt install pkg-config
 sudo apt install libssl
 ``` 
 
+###Google benchmark environment setup
+To install google benchmark in ubuntu run the following command
+```
+sudo apt-get update
+sudo apt-get install libbenchmark-dev
+```
+
