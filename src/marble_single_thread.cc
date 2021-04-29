@@ -9,12 +9,28 @@
 #include "material.h"
 #include <cassert>
 
+hittable_list static_scene()
+{
+  hittable_list world;
+  auto ground_material = make_unique<lambertian>(color(0.5, 0.5, 0.5));
+  auto glass_material = make_unique<dielectric>(1.5);
+
+  //metal
+  auto albedo = color::random(0.5, 1);
+  auto fuzz = random_double(0, 0.5);
+  auto metal_material = make_unique<metal>(albedo, fuzz);
+
+  world.add(make_unique<sphere>(point3(0, -1000, 0), 1000, std::move(ground_material)));
+  world.add(make_unique<sphere>(point3(5,1.5,1),1,std::move(glass_material)));
+  world.add(make_unique<sphere>(point3(1,1,1),1,std::move(metal_material)));
+  return world;
+}
 hittable_list random_scene()
 {
   hittable_list world;
 
-  auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
-  world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
+  auto ground_material = make_unique<lambertian>(color(0.5, 0.5, 0.5));
+  world.add(make_unique<sphere>(point3(0, -1000, 0), 1000, std::move(ground_material)));
 
   for(int a = -11; a < 11; a++)
     {
@@ -25,14 +41,14 @@ hittable_list random_scene()
 
           if((center - point3(4, 0.2, 0)).length() > 0.9)
             {
-              shared_ptr<material> sphere_material;
+              unique_ptr<material> sphere_material;
 
               if(choose_mat < 0.8)
                 {
                   // diffuse
                   auto albedo = color::random() * color::random();
-                  sphere_material = make_shared<lambertian>(albedo);
-                  world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                  sphere_material = make_unique<lambertian>(albedo);
+                  world.add(make_unique<sphere>(center, 0.2, std::move(sphere_material)));
 
                 }
               else if(choose_mat < 0.95)
@@ -40,14 +56,14 @@ hittable_list random_scene()
                   // metal
                   auto albedo = color::random(0.5, 1);
                   auto fuzz = random_double(0, 0.5);
-                  sphere_material = make_shared<metal>(albedo, fuzz);
-                  world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                  sphere_material = make_unique<metal>(albedo, fuzz);
+                  world.add(make_unique<sphere>(center, 0.2, std::move(sphere_material)));
                 }
               else
                 {
                   // glass
-                  sphere_material = make_shared<dielectric>(1.5);
-                  world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                  sphere_material = make_unique<dielectric>(1.5);
+                  world.add(make_unique<sphere>(center, 0.2, std::move(sphere_material)));
 
                 }
             }
@@ -55,14 +71,14 @@ hittable_list random_scene()
         }
     }
 
-  auto material1 = make_shared<dielectric>(1.5);
-  world.add(make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
+  auto material1 = make_unique<dielectric>(1.5);
+  world.add(make_unique<sphere>(point3(0, 1, 0), 1.0, std::move(material1)));
 
-  auto material2 = make_shared<lambertian>(color(0.4, 0.2, 0.1));
-  world.add(make_shared<sphere>(point3(-4, 1, 0), 1.0, material2));
+  auto material2 = make_unique<lambertian>(color(0.4, 0.2, 0.1));
+  world.add(make_unique<sphere>(point3(-4, 1, 0), 1.0, std::move(material2)));
 
-  auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
-  world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
+  auto material3 = make_unique<metal>(color(0.7, 0.6, 0.5), 0.0);
+  world.add(make_unique<sphere>(point3(4, 1, 0), 1.0, std::move(material3)));
 
   return world;
 }
@@ -114,12 +130,14 @@ int main()
   color *output_image = new color[image_height * image_width];
   double tstart = omp_get_wtime();
 
-  omp_set_num_threads(24);
-  #pragma omp parallel for shared(output_image, cam, world), schedule(dynamic)
+  omp_set_num_threads(12);
+#pragma omp parallel shared(output_image, cam)
+  {
+#pragma omp for schedule(dynamic)
   for(int j = image_height - 1; j >= 0; j--)
     {
       // std::cerr << "\rScanlines remaining: " << j << ' ' << omp_get_thread_num() << std::endl;
-      
+
       for(int i = 0; i < image_width; i++)
         {
           color pixel_color(0, 0, 0);
@@ -134,6 +152,7 @@ int main()
           output_image[((image_height - 1 - j)*image_width + i)] = pixel_color;
         }
     }
+  }
   double tend = omp_get_wtime();
   for(int i = 0; i < image_height * image_width; i++)
     write_color(std::cout, output_image[i], samples_per_pixel);
