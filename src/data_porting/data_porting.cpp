@@ -139,8 +139,13 @@ std::vector<shared_ptr<Sphere>> ShapeDataIO::deserialize_Spheres(const nlohmann:
 
 json ShapeDataIO::read(std::string fileName){
     json j;
-    std::ifstream file;
+    std::ifstream file(fileName);
+    if(!file.good()){
+        std::cerr<<"File "<<fileName<<" not exist"<<std::endl;
+        exit(1);
+    }
     file.open(fileName);
+    //std::cout<<file.rdbuf();
     file>>j;
     file.close();
     return j;

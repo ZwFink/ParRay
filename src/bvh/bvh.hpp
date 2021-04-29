@@ -60,7 +60,7 @@ class BVH{
     Octree *tree = nullptr; 
     private:
     static const vec3 planeSetNormals[kNumPlaneSetNormals];
-    std::vector<Extent> extentList;
+    std::vector<std::shared_ptr<Extent>> extentList;
 };
 
 /**

@@ -13,6 +13,19 @@ This will produce a ```ppm``` image that can be viewed using tools such as feh. 
 
 ![Image produced by the ray tracer](img.png)
 
+# Running the program
+## Generating a random scene
+```bash
+cd build/data_porting
+./gen_random_scene
+```
+The above command will output a json ```.data``` file, which can be fed into the algorithm.
+## Running single threaded BVH on the generated data file
+```bash
+cd build/bvh
+./sphere_bvh_single_threaded /path/to/scene_file
+```
+
 # Environment Setup
 The unit test requires CMake version at least 3.11 to run, due to the FetchContent() module.
 

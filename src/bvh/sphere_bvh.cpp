@@ -1,10 +1,11 @@
 #include "bvh.hpp"
-#include "boundable.h"
+#include "data_porting.h"
 #include "vec3.h"
 #include "camera.h"
 #include <vector>
 #include "color.h"
 #include <ctime>
+#include "boundable.h"
 
 BVH random_scene()
 {
@@ -40,6 +41,8 @@ BVH static_scene()
     return world;
 }
 
+
+
 color ray_color(const ray &r, BVH &world, int depth)
 {
     hit_record rec;
@@ -68,18 +71,33 @@ color ray_color(const ray &r, BVH &world, int depth)
     return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
-int main()
+std::vector<std::shared_ptr<Sphere>> load_scene(std::string fileName){
+  ShapeDataIO io;
+  std::cout<<"Loading "<<fileName<<std::endl;
+  nlohmann::json j = io.read(fileName);
+  return io.deserialize_Spheres(j);
+}
+
+int main(int argc, char** argv)
 {
+
+  if(argc<2){
+    std::cerr<<"Usage:"<<argv[0]<<" sceneFile"<<std::endl;
+    exit(1);
+  }
+
+  std::string sceneFile = argv[1];
+  std::vector<std::shared_ptr<Sphere>> scene_spheres = load_scene(sceneFile);
 
     // Image
     const auto aspect_ratio = 3.0 / 2.0;
     const int image_width = 1200;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 100;
-    const int max_depth = 5;
+    const int samples_per_pixel = 1000;
+    const int max_depth = 10;
 
   // World
-  auto world = static_scene();
+  BVH world(scene_spheres);
 
   point3 lookfrom(13, 2, 3);
   point3 lookat(0, 0, 0);
