@@ -7,8 +7,8 @@
 #include <random>
 
 
-using std::shared_ptr;
-using std::make_shared;
+using std::unique_ptr;
+using std::make_unique;
 using std::sqrt;
 
 
@@ -28,10 +28,11 @@ inline double clamp(double x, double min, double max)
   return x;
 }
 
+thread_local std::uniform_real_distribution<double> distribution(0.0, 1.0);
+thread_local std::mt19937 generator;
+
 inline double random_double()
 {
-  static std::uniform_real_distribution<double> distribution(0.0, 1.0);
-  static std::mt19937 generator;
   return distribution(generator);
 }
 
