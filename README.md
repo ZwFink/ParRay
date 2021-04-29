@@ -14,15 +14,16 @@ This will produce a ```ppm``` image that can be viewed using tools such as feh. 
 ![Image produced by the ray tracer](img.png)
 
 # Running the program
+The binaries are output to build/bin folder.
 ## Generating a random scene
 ```bash
-cd build/data_porting
+cd build/bin
 ./gen_random_scene
 ```
 The above command will output a json ```.data``` file, which can be fed into the algorithm.
 ## Running single threaded BVH on the generated data file
 ```bash
-cd build/bvh
+cd build/bin
 ./sphere_bvh_single_threaded /path/to/scene_file
 ```
 
