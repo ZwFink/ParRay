@@ -66,5 +66,9 @@ int main(int argc, char **argv){
     auto spheres = random_scene();
     nlohmann::json spheresJson = io.serialize(spheres);
     io.write("random_spheres_scene.data", spheresJson);
+    auto readJson = io.read("random_spheres_scene.data");
+    auto readSpheres = io.deserialize_Spheres(readJson);
+
+    std::cout<<readSpheres.size()<<" records are generated."<<std::endl;
     return 0;
 }

@@ -20,7 +20,7 @@ public:
 
 public:
     double d[kNumPlaneSetNormals][2]; //the distance d values for each plane set normals
-    std::shared_ptr<Sphere> object;
+    std::shared_ptr<Sphere> object = nullptr;
 };
 
 class Boundable{

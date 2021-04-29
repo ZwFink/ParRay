@@ -176,16 +176,16 @@ BVH::BVH(std::vector<std::shared_ptr<Sphere>>& objects){
     extentList.reserve(objects.size());
     for (int i = 0; i < objects.size(); i++)
     {
-        Extent objectExtent;
-        objects[i]->calculateBounds(planeSetNormals, kNumPlaneSetNormals, vec3(0), objectExtent);
-        scene.extendBy(objectExtent);
-        objectExtent.object = objects[i];
-        extentList[i] = objectExtent;
+        std::shared_ptr<Extent> objectExtent = make_shared<Extent>();
+        objects[i]->calculateBounds(planeSetNormals, kNumPlaneSetNormals, vec3(0), *objectExtent);
+        scene.extendBy(*objectExtent);
+        objectExtent->object = objects[i];
+        extentList.push_back(objectExtent);
     }
     tree = new Octree(scene);
 
     for(int i=0; i<objects.size();i++){
-        tree->insert(&extentList[i]);
+        tree->insert(extentList[i].get());
     }
 
     tree->build();
