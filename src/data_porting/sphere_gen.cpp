@@ -6,12 +6,12 @@
 #include "common.h"
 #include <nlohmann/json.hpp>
 
-std::vector<shared_ptr<sphere>> random_scene(int size)
+std::vector<sphere*> random_scene(int size)
 {
-    std::vector<std::shared_ptr<sphere>> output;
+    std::vector<sphere*> output;
 
-  auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
-  output.push_back(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
+  auto ground_material = make_unique<lambertian>(color(0.5, 0.5, 0.5));
+  output.push_back(new sphere(point3(0, -1000, 0), 1000, std::move(ground_material)));
 
   for (int a = -1*size; a < size; a++)
   {
@@ -22,41 +22,41 @@ std::vector<shared_ptr<sphere>> random_scene(int size)
 
       if ((center - point3(4, 0.2, 0)).length() > 0.9)
       {
-        shared_ptr<material> sphere_material;
+        unique_ptr<material> sphere_material;
 
         if (choose_mat < 0.8)
         {
           // diffuse
           auto albedo = color::random() * color::random();
-          sphere_material = make_shared<lambertian>(albedo);
-          output.push_back(make_shared<sphere>(center, 0.2, sphere_material));
+          sphere_material = make_unique<lambertian>(albedo);
+          output.push_back(new sphere(center, 0.2, std::move(sphere_material)));
         }
         else if (choose_mat < 0.95)
         {
           // metal
           auto albedo = color::random(0.5, 1);
           auto fuzz = random_double(0, 0.5);
-          sphere_material = make_shared<metal>(albedo, fuzz);
-          output.push_back(make_shared<sphere>(center, 0.2, sphere_material));
+          sphere_material = make_unique<metal>(albedo, fuzz);
+          output.push_back(new sphere(center, 0.2, std::move(sphere_material)));
         }
         else
         {
           // glass
-          sphere_material = make_shared<dielectric>(1.5);
-          output.push_back(make_shared<sphere>(center, 0.2, sphere_material));
+          sphere_material = make_unique<dielectric>(1.5);
+          output.push_back(new sphere(center, 0.2, std::move(sphere_material)));
         }
       }
     }
   }
 
-  auto material1 = make_shared<dielectric>(1.5);
-  output.push_back(make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
+  auto material1 = make_unique<dielectric>(1.5);
+  output.push_back(new sphere(point3(0, 1, 0), 1.0, std::move(material1)));
 
-  auto material2 = make_shared<lambertian>(color(0.4, 0.2, 0.1));
-  output.push_back(make_shared<sphere>(point3(-4, 1, 0), 1.0, material2));
+  auto material2 = make_unique<lambertian>(color(0.4, 0.2, 0.1));
+  output.push_back(new sphere(point3(-4, 1, 0), 1.0, std::move(material2)));
 
-  auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
-  output.push_back(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
+  auto material3 = make_unique<metal>(color(0.7, 0.6, 0.5), 0.0);
+  output.push_back(new sphere(point3(4, 1, 0), 1.0, std::move(material3)));
 
   return output;
 }
