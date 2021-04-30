@@ -6,16 +6,16 @@
 #include "common.h"
 #include <nlohmann/json.hpp>
 
-std::vector<shared_ptr<sphere>> random_scene()
+std::vector<shared_ptr<sphere>> random_scene(int size)
 {
     std::vector<std::shared_ptr<sphere>> output;
 
   auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
   output.push_back(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
 
-  for (int a = -11; a < 11; a++)
+  for (int a = -1*size; a < size; a++)
   {
-    for (int b = -11; b < 11; b++)
+    for (int b = -1*size; b < size; b++)
     {
       auto choose_mat = random_double();
       point3 center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
@@ -62,8 +62,13 @@ std::vector<shared_ptr<sphere>> random_scene()
 }
 
 int main(int argc, char **argv){
+    if(argc<2){
+      std::cerr<<"Usage: "<<argv[0]<<" size"<<std::endl;
+      exit(1);
+    }
+    int size = atoi(argv[1]);
     ShapeDataIO io;
-    auto spheres = random_scene();
+    auto spheres = random_scene(size);
     nlohmann::json spheresJson = io.serialize(spheres);
     io.write("random_spheres_scene.data", spheresJson);
     auto readJson = io.read("random_spheres_scene.data");

@@ -5,6 +5,11 @@ add_executable(sphere_bvh_single_threaded "sphere_bvh.cpp")
 target_include_directories(sphere_bvh_single_threaded PUBLIC "../common/" "../data_porting" "./")
 target_link_libraries(sphere_bvh_single_threaded bvhlib tracer_common shapeio nlohmann_json::nlohmann_json)
 
+if(OpenMP_CXX_FOUND)
+  add_executable(bvh_mt "sphere_bvh_openmp.cpp")
+  target_include_directories(bvh_mt PUBLIC "../common/" "../data_porting" "./")
+  target_link_libraries(bvh_mt bvhlib tracer_common shapeio nlohmann_json::nlohmann_json OpenMP::OpenMP_CXX)
+endif()
 
 enable_testing()
 add_executable(
