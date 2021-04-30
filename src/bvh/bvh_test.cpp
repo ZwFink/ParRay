@@ -107,8 +107,8 @@ TEST(Octree, insert_object)
     Extent sphere1Extent;
     Sphere sphere1(vec3(3,3,3),1);
     Sphere sphere2(vec3(-3,-3,-3),2);
-    Extent sphere1Ext;
-    Extent sphere2Ext;
+    Extent *sphere1Ext;
+    Extent *sphere2Ext;
     vec3 origin(0);
     vec3 normal[] = {vec3(1,0,0), vec3(0,1,0), vec3(0,0,1)};
 
@@ -116,26 +116,26 @@ TEST(Octree, insert_object)
     sphere2.calculateBounds(normal, 3, origin, sphere2Ext);
     double expectdFor1[][2] = {{2,4},{2,4},{2,4}};
     double expectdFor2[][2] = {{-5,-1},{-5,-1},{-5,-1}};
-    assertBoundDistance(expectdFor1, sphere1Ext.d,3);
-    assertBoundDistance(expectdFor2, sphere2Ext.d,3);
+    assertBoundDistance(expectdFor1, sphere1Ext->d,3);
+    assertBoundDistance(expectdFor2, sphere2Ext->d,3);
 
 
-    Extent sceneExtent;
-    sceneExtent.d[0][0]=-10;
-    sceneExtent.d[0][1]=10;
-    sceneExtent.d[1][0]=-10;
-    sceneExtent.d[1][1]=10;
-    sceneExtent.d[2][0]=-10;
-    sceneExtent.d[2][1]=10;
+    Extent *sceneExtent = new Extent();
+    sceneExtent->d[0][0]=-10;
+    sceneExtent->d[0][1]=10;
+    sceneExtent->d[1][0]=-10;
+    sceneExtent->d[1][1]=10;
+    sceneExtent->d[2][0]=-10;
+    sceneExtent->d[2][1]=10;
   
-    Octree tree(sceneExtent);
-    tree.insert(tree.root, &sphere1Ext, tree.bbox, 0);
+    Octree tree(const_cast<const Extent*>(sceneExtent));
+    tree.insert(tree.root, const_cast<const Extent*>(sphere1Ext), tree.bbox, 0);
     ASSERT_TRUE(tree.root->isLeaf);
     ASSERT_EQ(1,tree.root->nodeExtentsList.size());
-    ASSERT_EQ(&sphere1Ext, tree.root->nodeExtentsList[0]);
+    ASSERT_EQ(sphere1Ext, tree.root->nodeExtentsList[0]);
     ASSERT_EQ(nullptr,tree.root->child[0]);
 
-    tree.insert(tree.root, &sphere2Ext, tree.bbox, 0);
+    tree.insert(tree.root, const_cast<const Extent*>(sphere2Ext), tree.bbox, 0);
     ASSERT_FALSE(tree.root->isLeaf);
     ASSERT_EQ(0, tree.root->nodeExtentsList.size());
 
@@ -150,21 +150,21 @@ TEST(Octree, insert_object)
     ASSERT_EQ(nullptr, tree.root->child[6]);
     ASSERT_NE(nullptr, tree.root->child[7]);
 
-    ASSERT_EQ(&sphere1Ext, tree.root->child[7]->nodeExtentsList[0]);
-    ASSERT_EQ(&sphere2Ext, tree.root->child[0]->nodeExtentsList[0]);
+    ASSERT_EQ(sphere1Ext, tree.root->child[7]->nodeExtentsList[0]);
+    ASSERT_EQ(sphere2Ext, tree.root->child[0]->nodeExtentsList[0]);
 
     vec3_eq(vec3(-10,-10,-10),tree.bbox.bounds[0]);
     vec3_eq(vec3(10,10,10),tree.bbox.bounds[1]);
 
     //insert a third sphere in the same child box as sphere1
     Sphere sphere3(vec3(2,2,2),0.2);
-    Extent sphere3Ext;
+    Extent* sphere3Ext;
     sphere3.calculateBounds(normal, 3, origin, sphere3Ext);
-    tree.insert(tree.root, &sphere3Ext, tree.bbox, 0);
+    tree.insert(tree.root, const_cast<const Extent*>(sphere3Ext), tree.bbox, 0);
     ASSERT_EQ(0, tree.root->child[7]->nodeExtentsList.size());
     ASSERT_EQ(1, tree.root->child[7]->child[0]->child[7]->nodeExtentsList.size());
-    ASSERT_EQ(&sphere1Ext, tree.root->child[7]->child[0]->child[7]->nodeExtentsList[0]);
-    ASSERT_EQ(&sphere3Ext, tree.root->child[7]->child[0]->child[0]->nodeExtentsList[0]);
+    ASSERT_EQ(sphere1Ext, tree.root->child[7]->child[0]->child[7]->nodeExtentsList[0]);
+    ASSERT_EQ(sphere3Ext, tree.root->child[7]->child[0]->child[0]->nodeExtentsList[0]);
 }
 
 TEST(Octree, bottom_up_build){
@@ -175,25 +175,25 @@ TEST(Octree, bottom_up_build){
     Sphere sphere1(vec3(3,3,3),1);
     Sphere sphere2(vec3(-3,-3,-3),2);
     Sphere sphere3(vec3(2,2,2),0.2);
-    Extent sphere1Ext;
-    Extent sphere2Ext;
-    Extent sphere3Ext;
+    Extent* sphere1Ext;
+    Extent* sphere2Ext;
+    Extent* sphere3Ext;
     sphere1.calculateBounds(normal, 3, origin, sphere1Ext);
     sphere2.calculateBounds(normal, 3, origin, sphere2Ext);
     sphere3.calculateBounds(normal, 3, origin, sphere3Ext);
 
-    Extent sceneExtent;
-    sceneExtent.d[0][0]=-10;
-    sceneExtent.d[0][1]=10;
-    sceneExtent.d[1][0]=-10;
-    sceneExtent.d[1][1]=10;
-    sceneExtent.d[2][0]=-10;
-    sceneExtent.d[2][1]=10;
+    Extent* sceneExtent = new Extent();
+    sceneExtent->d[0][0]=-10;
+    sceneExtent->d[0][1]=10;
+    sceneExtent->d[1][0]=-10;
+    sceneExtent->d[1][1]=10;
+    sceneExtent->d[2][0]=-10;
+    sceneExtent->d[2][1]=10;
  
-    Octree tree(sceneExtent);
-    tree.insert(tree.root, &sphere1Ext, tree.bbox, 0);
-    tree.insert(tree.root, &sphere2Ext, tree.bbox, 0);
-    tree.insert(tree.root, &sphere3Ext, tree.bbox, 0);
+    Octree tree(const_cast<const Extent*>(sceneExtent));
+    tree.insert(tree.root, const_cast<const Extent*>(sphere1Ext), tree.bbox, 0);
+    tree.insert(tree.root, const_cast<const Extent*>(sphere2Ext), tree.bbox, 0);
+    tree.insert(tree.root, const_cast<const Extent*>(sphere3Ext), tree.bbox, 0);
 
     tree.build(tree.root, tree.bbox);
 
@@ -205,7 +205,7 @@ TEST(Octree, bottom_up_build){
         expectedBox.d[1][1] = 4;
         expectedBox.d[2][0] = 2;
         expectedBox.d[2][1] = 4;
-        assertBoundDistance(expectedBox.d, tree.root->child[7]->child[0]->child[7]->currentNodeExtent.d, 3);
+        assertBoundDistance(expectedBox.d, tree.root->child[7]->child[0]->child[7]->currentNodeExtent->d, 3);
     }
     {
         Extent expectedBox;
@@ -215,7 +215,7 @@ TEST(Octree, bottom_up_build){
         expectedBox.d[1][1] = -1;
         expectedBox.d[2][0] = -5;
         expectedBox.d[2][1] = -1;
-        assertBoundDistance(expectedBox.d, tree.root->child[0]->currentNodeExtent.d, 3);
+        assertBoundDistance(expectedBox.d, tree.root->child[0]->currentNodeExtent->d, 3);
     }
     {
         //test the root box
@@ -226,10 +226,10 @@ TEST(Octree, bottom_up_build){
         expectedBox.d[1][1] = 4;
         expectedBox.d[2][0] = -5;
         expectedBox.d[2][1] = 4;
-        assertBoundDistance(expectedBox.d, tree.root->currentNodeExtent.d, 3);
+        assertBoundDistance(expectedBox.d, tree.root->currentNodeExtent->d, 3);
     }
-    ASSERT_EQ(&sphere1Ext, tree.root->child[7]->child[0]->child[7]->nodeExtentsList[0]);
-    ASSERT_EQ(&sphere3Ext, tree.root->child[7]->child[0]->child[0]->nodeExtentsList[0]);
+    ASSERT_EQ(sphere1Ext, tree.root->child[7]->child[0]->child[7]->nodeExtentsList[0]);
+    ASSERT_EQ(sphere3Ext, tree.root->child[7]->child[0]->child[0]->nodeExtentsList[0]);
 }
 
 TEST(bvh, create_BVH_1_object){
@@ -288,7 +288,7 @@ TEST(bvh, create_BVH_1_object_b){
 
     const ray ray_tangential(vec3(0), vec3(sqrt(8)/3,1/3,0));
     hitResult = bvh.intersect(ray_tangential, &hitObject, hitRecord);
-    ASSERT_EQ(true, hitResult);
+    ASSERT_EQ(false, hitResult);
     
     sceneObjects.clear();
 }

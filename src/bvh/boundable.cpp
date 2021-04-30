@@ -11,14 +11,14 @@ Extent::Extent()
     }
 }
 
-void Extent::extendBy(const Extent &extents)
+void Extent::extendBy(const Extent* extents)
 {
     for (int i = 0; i < kNumPlaneSetNormals; ++i)
     {
-        if (extents.d[i][0] < d[i][0])
-            d[i][0] = extents.d[i][0];
-        if (extents.d[i][1] > d[i][1])
-            d[i][1] = extents.d[i][1];
+        if (extents->d[i][0] < d[i][0])
+            d[i][0] = extents->d[i][0];
+        if (extents->d[i][1] > d[i][1])
+            d[i][1] = extents->d[i][1];
     }
 }
 
@@ -60,16 +60,17 @@ Sphere::Sphere(vec3 _center, double _r) : Sphere(_center, _r, nullptr)
 Sphere::Sphere(vec3 _center, double _r, material* _m): center(_center), r(_r), mat_ptr(_m){
 }
 
-void Sphere::calculateBounds(const vec3 normalPlanes[], const int planeSize, const vec3 origin, Extent &outputExtent)
+void Sphere::calculateBounds(const vec3 normalPlanes[], const int planeSize, const vec3 origin, Extent* &outputExtent)
 {
+    outputExtent = new Extent();
     for (int i = 0; i < planeSize; i++)
     {
         vec3 normal = normalPlanes[i];
         vec3 unit_normal = unit_vector(normal);
         double d1 = dot(origin + center + r * unit_normal, unit_normal);
         double d2 = dot(origin + center - r * unit_normal, unit_normal);
-        outputExtent.d[i][0] = std::min(d1, d2);
-        outputExtent.d[i][1] = std::max(d1, d2);
+        outputExtent->d[i][0] = std::min(d1, d2);
+        outputExtent->d[i][1] = std::max(d1, d2);
     }
 }
 
