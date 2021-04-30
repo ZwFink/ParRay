@@ -171,7 +171,7 @@ const vec3 BVH::planeSetNormals[kNumPlaneSetNormals] = {
 
 
 
-BVH::BVH(std::vector<std::shared_ptr<Sphere>>& objects){
+BVH::BVH(std::vector<Sphere*>& objects){
     Extent scene;
     extentList.reserve(objects.size());
     for (int i = 0; i < objects.size(); i++)
@@ -180,6 +180,7 @@ BVH::BVH(std::vector<std::shared_ptr<Sphere>>& objects){
         objects[i]->calculateBounds(planeSetNormals, kNumPlaneSetNormals, vec3(0), *objectExtent);
         scene.extendBy(*objectExtent);
         objectExtent->object = objects[i];
+        auto ptr = objectExtent->object;
         extentList.push_back(objectExtent);
     }
     tree = new Octree(scene);
@@ -195,9 +196,9 @@ BVH::~BVH(){
     delete tree;
 }
 
-bool BVH::intersect(const ray &ray, std::shared_ptr<Sphere> hit_object, hit_record& hit_record_out){
+bool BVH::intersect(const ray &ray, Sphere **hit_object, hit_record& hit_record_out){
     double tHit = DBL_MAX;
-    std::shared_ptr<Sphere> hitObject(nullptr);
+    Sphere *hitObject = nullptr;
     hit_record hitRecord;
     //common R*O and R*N results that can be used
     double n_dot_o[kNumPlaneSetNormals];
@@ -249,7 +250,7 @@ bool BVH::intersect(const ray &ray, std::shared_ptr<Sphere> hit_object, hit_reco
     }
 
     if(hitObject!=nullptr){
-        hit_object = hitObject;
+        *hit_object = hitObject;
         hit_record_out = hitRecord;
         return true;
     }

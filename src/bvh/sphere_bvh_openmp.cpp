@@ -11,12 +11,12 @@
 color ray_color(const ray &r, BVH &world, int depth)
 {
     hit_record rec;
-    std::shared_ptr<Sphere> hitObject(nullptr);
+    Sphere *hitObject = nullptr;
 
     if (depth <= 0)
         return color(0, 0, 0);
 
-    if (world.intersect(r, hitObject, rec))
+    if (world.intersect(r, &hitObject, rec))
     {
         ray scattered;
         color attenuation;
@@ -36,7 +36,7 @@ color ray_color(const ray &r, BVH &world, int depth)
     return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
-std::vector<std::shared_ptr<Sphere>> load_scene(std::string fileName){
+std::vector<Sphere*> load_scene(std::string fileName){
   ShapeDataIO io;
   std::cout<<"Loading "<<fileName<<std::endl;
   nlohmann::json j = io.read(fileName);
@@ -94,7 +94,7 @@ int main(int argc, char** argv)
   }
 
   std::string sceneFile = argv[1];
-  std::vector<std::shared_ptr<Sphere>> scene_spheres = load_scene(sceneFile);
+  std::vector<Sphere*> scene_spheres = load_scene(sceneFile);
 
     // Image
     const auto aspect_ratio = 3.0 / 2.0;
