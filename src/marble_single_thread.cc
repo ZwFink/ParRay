@@ -115,7 +115,7 @@ int main()
   const int max_depth = 50;
 
   // World
-  auto world = static_scene();
+  auto world = random_scene();
 
   point3 lookfrom(13, 2, 3);
   point3 lookat(0, 0, 0);
@@ -126,12 +126,11 @@ int main()
 
   std ::cout << "P3\n"
              << image_width << ' ' << image_height << "\n255\n";
-  std::clock_t c_start = std::clock();
 
   color *output_image = new color[image_height * image_width];
   double tstart = omp_get_wtime();
 
-  omp_set_num_threads(12);
+  omp_set_num_threads(24);
 #pragma omp parallel shared(output_image, cam)
   {
 #pragma omp for schedule(dynamic)

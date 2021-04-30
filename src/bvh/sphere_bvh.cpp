@@ -1,25 +1,26 @@
 #include "bvh.hpp"
-#include "data_porting.h"
+// #include "data_porting.h"
 #include "vec3.h"
 #include "camera.h"
 #include <vector>
 #include "color.h"
 #include <ctime>
 #include "boundable.h"
+#include <omp.h>
 
 BVH random_scene()
 {
 
     std::vector<std::shared_ptr<Sphere>> sceneObjects;
-    auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
+    auto ground_material = make_unique<lambertian>(color(0.5, 0.5, 0.5));
     //add ground
-    sceneObjects.emplace_back(new Sphere(point3(0, -1000, 0), 1000, ground_material));
+    sceneObjects.emplace_back(new Sphere(point3(0, -1000, 0), 1000, std::move(ground_material)));
 
     auto albedo = color::random(0.5, 1);
     auto fuzz = random_double(0, 0.5);
-    auto metal_material = make_shared<metal>(albedo, fuzz);
+    auto metal_material = make_unique<metal>(albedo, fuzz);
 
-    sceneObjects.emplace_back(new Sphere(point3(0, 2, 1.5), 1, metal_material));
+    sceneObjects.emplace_back(new Sphere(point3(0, 2, 1.5), 1, std::move(metal_material)));
     BVH world(sceneObjects);
     return world;
 }
@@ -27,18 +28,18 @@ BVH random_scene()
 BVH static_scene()
 {
     std::vector<std::shared_ptr<Sphere>> sceneObjects;
-    auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
-    auto glass_material = make_shared<dielectric>(1.5);
+    auto ground_material = make_unique<lambertian>(color(0.5, 0.5, 0.5));
+    auto glass_material = make_unique<dielectric>(1.5);
 
     //metal
     auto albedo = color::random(0.5, 1);
     auto fuzz = random_double(0, 0.5);
-    auto metal_material = make_shared<metal>(albedo, fuzz);
-    sceneObjects.emplace_back(new Sphere(point3(0, -1000, 0), 1000, ground_material));
-    sceneObjects.emplace_back(new Sphere(point3(5, 1.5, 1), 1, glass_material));
-    sceneObjects.emplace_back(new Sphere(point3(1, 1, 1), 1, metal_material));
-    BVH world(sceneObjects);
-    return world;
+    auto metal_material = make_unique<metal>(albedo, fuzz);
+    sceneObjects.emplace_back(new Sphere(point3(0, -1000, 0), 1000, std::move(ground_material)));
+    sceneObjects.emplace_back(new Sphere(point3(5, 1.5, 1), 1, std::move(glass_material)));
+    sceneObjects.emplace_back(new Sphere(point3(1, 1, 1), 1, std::move(metal_material)));
+    std::cout << "World created" << std::endl;
+    return BVH(sceneObjects);
 }
 
 
@@ -46,12 +47,12 @@ BVH static_scene()
 color ray_color(const ray &r, BVH &world, int depth)
 {
     hit_record rec;
-    std::shared_ptr<Sphere> hitObject(nullptr);
+    Sphere *hitObject = nullptr;
 
     if (depth <= 0)
         return color(0, 0, 0);
 
-    if (world.intersect(r, hitObject, rec))
+    if (world.intersect(r, &hitObject, rec))
     {
         ray scattered;
         color attenuation;
@@ -71,33 +72,87 @@ color ray_color(const ray &r, BVH &world, int depth)
     return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
-std::vector<std::shared_ptr<Sphere>> load_scene(std::string fileName){
-  ShapeDataIO io;
-  std::cout<<"Loading "<<fileName<<std::endl;
-  nlohmann::json j = io.read(fileName);
-  return io.deserialize_Spheres(j);
-}
+// std::vector<std::shared_ptr<Sphere>> load_scene(std::string fileName){
+//   ShapeDataIO io;
+//   std::cout<<"Loading "<<fileName<<std::endl;
+//   nlohmann::json j = io.read(fileName);
+//   return io.deserialize_Spheres(j);
+// }
 
 int main(int argc, char** argv)
 {
 
-  if(argc<2){
-    std::cerr<<"Usage:"<<argv[0]<<" sceneFile"<<std::endl;
-    exit(1);
-  }
+  // if(argc<2){
+  //   std::cerr<<"Usage:"<<argv[0]<<" sceneFile"<<std::endl;
+  //   exit(1);
+  // }
 
-  std::string sceneFile = argv[1];
-  std::vector<std::shared_ptr<Sphere>> scene_spheres = load_scene(sceneFile);
+  // std::string sceneFile = argv[1];
+  // std::vector<std::shared_ptr<Sphere>> scene_spheres = load_scene(sceneFile);
 
     // Image
     const auto aspect_ratio = 3.0 / 2.0;
     const int image_width = 1200;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 1000;
+    const int samples_per_pixel = 500;
     const int max_depth = 10;
 
   // World
-  BVH world(scene_spheres);
+  // BVH world(scene_spheres);
+
+    std::vector<std::shared_ptr<Sphere>> sceneObjects;
+
+  auto ground_material = make_unique<lambertian>(color(0.5, 0.5, 0.5));
+  sceneObjects.emplace_back(make_shared<Sphere>(point3(0, -1000, 0), 1000, std::move(ground_material)));
+
+  for (int a = -11; a < 11; a++)
+    {
+      for(int b = -11; b < 11; b++)
+        {
+          auto choose_mat = random_double();
+          point3 center(a+0.9*random_double(), 0.2, b + 0.9*random_double());
+
+          if((center - point3(4, 0.2, 0)).length() > 0.9)
+            {
+              unique_ptr<material> sphere_material;
+
+              if(choose_mat < 0.8)
+                {
+                  // diffuse
+                  auto albedo = color::random() * color::random();
+                  sphere_material = make_unique<lambertian>(albedo);
+                  sceneObjects.emplace_back(make_shared<Sphere>(center, 0.2, std::move(sphere_material)));
+
+                }
+              else if(choose_mat < 0.95)
+                {
+                  // metal
+                  auto albedo = color::random(0.5, 1);
+                  auto fuzz = random_double(0, 0.5);
+                  sphere_material = make_unique<metal>(albedo, fuzz);
+                  sceneObjects.emplace_back(make_shared<Sphere>(center, 0.2, std::move(sphere_material)));
+                }
+              else
+                {
+                  // glass
+                  sphere_material = make_unique<dielectric>(1.5);
+                  sceneObjects.emplace_back(make_shared<Sphere>(center, 0.2, std::move(sphere_material)));
+
+                }
+            }
+        }
+  }
+  auto material1 = make_unique<dielectric>(1.5);
+  sceneObjects.emplace_back(make_shared<Sphere>(point3(0, 1, 0), 1.0, std::move(material1)));
+
+  auto material2 = make_unique<lambertian>(color(0.4, 0.2, 0.1));
+  sceneObjects.emplace_back(make_shared<Sphere>(point3(-4, 1, 0), 1.0, std::move(material2)));
+
+  auto material3 = make_unique<metal>(color(0.7, 0.6, 0.5), 0.0);
+  sceneObjects.emplace_back(make_shared<Sphere>(point3(4, 1, 0), 1.0, std::move(material3)));
+
+  BVH world(sceneObjects);
+
 
   point3 lookfrom(13, 2, 3);
   point3 lookat(0, 0, 0);
@@ -106,11 +161,20 @@ int main(int argc, char** argv)
   auto aperture = 0.1;
   camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 
-  std :: cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-  std::clock_t c_start = std::clock();
+  std ::cout << "P3\n"
+             << image_width << ' ' << image_height << "\n255\n";
+
+  color *output_image = new color[image_height * image_width];
+  double tstart = omp_get_wtime();
+
+  omp_set_num_threads(24);
+#pragma omp parallel shared(output_image, cam)
+  {
+#pragma omp for schedule(dynamic)
   for(int j = image_height - 1; j >= 0; j--)
     {
-      std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+      // std::cerr << "\rScanlines remaining: " << j << ' ' << omp_get_thread_num() << std::endl;
+
       for(int i = 0; i < image_width; i++)
         {
           color pixel_color(0, 0, 0);
@@ -122,11 +186,14 @@ int main(int argc, char** argv)
               ray r = cam.get_ray(u, v);
               pixel_color += ray_color(r, world, max_depth);
             }
-          write_color(std::cout, pixel_color, samples_per_pixel);
+          output_image[((image_height - 1 - j)*image_width + i)] = pixel_color;
         }
-
     }
-  std::clock_t c_end = std::clock();
+  }
+
+  double tend = omp_get_wtime();
+  for(int i = 0; i < image_height * image_width; i++)
+    write_color(std::cout, output_image[i], samples_per_pixel);
+  std::cerr << "\n\nElapsed time: " << tend - tstart << "\n";
   std::cerr << "\nDone.\n";
-  std::cerr << "\nTotal time: "<<(c_end-c_start)/CLOCKS_PER_SEC<<std::endl;
 }

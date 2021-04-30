@@ -245,16 +245,16 @@ TEST(bvh, create_BVH_1_object){
     hit_record hitRecord;
 
     const ray ray_N(vec3(0),vec3(1,0,0));
-    shared_ptr<Sphere> hitObject(nullptr);
-    bool hitResult = bvh.intersect(ray_N, hitObject, hitRecord);
+    Sphere *hitObject = nullptr;
+    bool hitResult = bvh.intersect(ray_N, &hitObject, hitRecord);
     ASSERT_EQ(false, hitResult);
 
     const ray ray_E(vec3(0),vec3(0,1,0));
-    hitResult = bvh.intersect(ray_E, hitObject, hitRecord);
+    hitResult = bvh.intersect(ray_E, &hitObject, hitRecord);
     ASSERT_EQ(false, hitResult);
 
     const ray ray_diagonal(vec3(0), vec3(sqrt(3)/3));
-    hitResult = bvh.intersect(ray_diagonal, hitObject, hitRecord);
+    hitResult = bvh.intersect(ray_diagonal, &hitObject, hitRecord);
     ASSERT_EQ(true, hitResult);
     sceneObjects.clear();
 }
@@ -273,20 +273,20 @@ TEST(bvh, create_BVH_1_object_b){
     hit_record hitRecord;
 
     const ray ray_N(vec3(0),vec3(1,0,0));
-    std::shared_ptr<Sphere> hitObject(nullptr);
-    bool hitResult = bvh.intersect(ray_N, hitObject, hitRecord);
+    Sphere *hitObject = nullptr;
+    bool hitResult = bvh.intersect(ray_N, &hitObject, hitRecord);
     ASSERT_EQ(true, hitResult);
 
     const ray ray_E(vec3(0),vec3(0,1,0));
-    hitResult = bvh.intersect(ray_E, hitObject, hitRecord);
+    hitResult = bvh.intersect(ray_E, &hitObject, hitRecord);
     ASSERT_EQ(false, hitResult);
 
     const ray ray_diagonal(vec3(0), vec3(sqrt(3)/3));
-    hitResult = bvh.intersect(ray_diagonal, hitObject, hitRecord);
+    hitResult = bvh.intersect(ray_diagonal, &hitObject, hitRecord);
     ASSERT_EQ(false, hitResult);
 
     const ray ray_tangential(vec3(0), vec3(sqrt(8)/3,1/3,0));
-    hitResult = bvh.intersect(ray_tangential, hitObject, hitRecord);
+    hitResult = bvh.intersect(ray_tangential, &hitObject, hitRecord);
     ASSERT_EQ(true, hitResult);
     
     sceneObjects.clear();

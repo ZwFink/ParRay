@@ -5,7 +5,8 @@ find_package(OpenMP REQUIRED)
 add_executable(sphere_bvh_single_threaded "sphere_bvh.cpp")
 add_compile_options(-O3 -g)
 target_include_directories(sphere_bvh_single_threaded PUBLIC "../common/" "../data_porting" "./")
-target_link_libraries(sphere_bvh_single_threaded bvhlib tracer_common shapeio nlohmann_json::nlohmann_json OpenMP::OpenMP_CXX)
+# target_link_libraries(sphere_bvh_single_threaded bvhlib tracer_common shapeio nlohmann_json::nlohmann_json OpenMP::OpenMP_CXX)
+target_link_libraries(sphere_bvh_single_threaded bvhlib tracer_common nlohmann_json::nlohmann_json OpenMP::OpenMP_CXX)
 
 
 enable_testing()
