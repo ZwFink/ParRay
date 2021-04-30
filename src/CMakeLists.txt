@@ -12,6 +12,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    message(STATUS "Open MP package found")
+else(OpenMP_CXX_FOUND)
+    message(WARNING "Open MP package not found")
+endif()
+
 add_subdirectory("common")
 add_subdirectory("bvh")
 add_subdirectory("data_porting")
