@@ -53,11 +53,11 @@ vec3 Extent::centroid() const
         (d[2][0] + d[2][1]) * 0.5);
 }
 
-Sphere::Sphere(vec3 _center, double _r) : Sphere(_center, _r, shared_ptr<material>())
+Sphere::Sphere(vec3 _center, double _r) : Sphere(_center, _r, unique_ptr<material>())
 {
 }
 
-Sphere::Sphere(vec3 _center, double _r, shared_ptr<material> _m): center(_center), r(_r), mat_ptr(_m){
+Sphere::Sphere(vec3 _center, double _r, unique_ptr<material>&& _m): center(_center), r(_r), mat_ptr(std::move(_m)){
 }
 
 void Sphere::calculateBounds(const vec3 normalPlanes[], const int planeSize, const vec3 origin, Extent &outputExtent)
@@ -100,6 +100,6 @@ bool Sphere::hit(const ray& ray, const double t_min, const double t_max, hit_rec
   rec.p = ray.at(rec.t);
   vec3 outward_normal = (rec.p - this->center) / r;
   rec.set_face_normal(ray, outward_normal);
-  rec.mat_ptr = this->mat_ptr;
+  rec.mat_ptr = this->mat_ptr.get();
   return true;
 }
