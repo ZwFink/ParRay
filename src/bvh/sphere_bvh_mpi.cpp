@@ -138,21 +138,46 @@ void raytracing(const traceConfig config){
 
   double tend = omp_get_wtime();
   MPI_Win_fence(0, window);
+  double t_elapsed = tend - tstart;
   double tend_all = omp_get_wtime();
+
+  double *receive_data = nullptr;
+
+  if(config.myRank == 0)
+    {
+      receive_data = new double[config.numProcs];
+    }
+
+  MPI_Gather(&t_elapsed,
+             1,
+             MPI_DOUBLE,
+             receive_data,
+             1,
+             MPI_DOUBLE,
+             0,
+             MPI_COMM_WORLD
+             );
+
   if(config.myRank == 0)
     {
       for(int i = 0; i < image_height * image_width; i++)
         write_color(std::cout, output_image[i], samples_per_pixel);
   }
-  std::cerr << "Elapsed time on rank: " << config.myRank << " " << tend - tstart << "\n";
 
   if(config.myRank == 0)
     {
-      std::cerr << "Elapsed time for all processes: " << " " << tend_all - tstart << "\n";
+      std::cerr << "TIME_ALL: " << tend_all - tstart << "\n";
+
+      for(int i = 0; i < config.numProcs; i++)
+        {
+          std::cerr << "TIME_PROCESS: " << i << " " << receive_data[i] << "\n";
+        }
     }
 
   MPI_Win_free(&window);
   MPI_Free_mem(output_image);
+
+  delete[] receive_data;
 }
 
 
