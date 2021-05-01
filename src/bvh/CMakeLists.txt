@@ -1,4 +1,5 @@
 find_package(OpenMP REQUIRED)
+find_package(MPI REQUIRED)
 
 add_compile_options(-O3 -g)
 
@@ -15,6 +16,14 @@ if(OpenMP_CXX_FOUND)
   target_include_directories(bvh_mt PUBLIC "../common/" "../data_porting" "./")
   target_link_libraries(bvh_mt bvhlib tracer_common shapeio nlohmann_json::nlohmann_json OpenMP::OpenMP_CXX)
 endif()
+
+if(MPI_FOUND)
+  add_executable(bvh_mpi "sphere_bvh_mpi.cpp")
+  target_include_directories(bvh_mpi PUBLIC "../common/" "../data_porting" "./")
+  include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+  target_link_libraries(bvh_mpi bvhlib tracer_common shapeio nlohmann_json::nlohmann_json OpenMP::OpenMP_CXX ${MPI_CXX_LIBRARIES})
+endif()
+
 
 enable_testing()
 add_executable(
