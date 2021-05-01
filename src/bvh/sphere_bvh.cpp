@@ -90,20 +90,18 @@ int main(int argc, char **argv)
 
   // Image
   const auto aspect_ratio = 3.0 / 2.0;
-  const int image_width = 1200;
+  const int image_width = 100;
   const int image_height = static_cast<int>(image_width / aspect_ratio);
-  const int samples_per_pixel = 100;
-  const int max_depth = 10;
+  const int samples_per_pixel = 1;
+  const int max_depth = 1;
 
   // World
   // BVH world(scene_spheres);
 
   std::vector<Sphere *> sceneObjects;
-  std::vector<material *> p_materials;
 
   auto ground_material = new lambertian(color(0.5, 0.5, 0.5));
   sceneObjects.push_back(new Sphere(point3(0, -1000, 0), 1000, dynamic_cast<material *>(ground_material)));
-  p_materials.push_back(ground_material);
 
   for (int a = -11; a < 11; a++)
   {
@@ -137,21 +135,17 @@ int main(int argc, char **argv)
           sphere_material = new dielectric(1.5);
           sceneObjects.push_back(new Sphere(center, 0.2, dynamic_cast<material *>(sphere_material)));
         }
-        p_materials.push_back(sphere_material);
       }
     }
   }
   auto material1 = new dielectric(1.5);
   sceneObjects.push_back(new Sphere(point3(0, 1, 0), 1.0, dynamic_cast<material *>(material1)));
-  p_materials.push_back(material1);
 
   auto material2 = new lambertian(color(0.4, 0.2, 0.1));
   sceneObjects.push_back(new Sphere(point3(-4, 1, 0), 1.0, dynamic_cast<material *>(material2)));
-  p_materials.push_back(material2);
 
   auto material3 = new metal(color(0.7, 0.6, 0.5), 0.0);
   sceneObjects.push_back(new Sphere(point3(4, 1, 0), 1.0, dynamic_cast<material *>(material3)));
-  p_materials.push_back(material3);
 
   BVH world(sceneObjects);
 
@@ -199,17 +193,14 @@ int main(int argc, char **argv)
   std::cerr << "\nDone.\n";
 
   //clean up
-  for(int i=0; i<p_materials.size();i++){
-    if(p_materials[i]!=nullptr){
-      delete p_materials[i];
-      p_materials[i]=nullptr;
-    }
-  }
-
   for(int i=0; i<sceneObjects.size();i++){
     if(sceneObjects[i]!=nullptr){
       delete sceneObjects[i];
       sceneObjects[i]=nullptr;
     }
+  }
+  if(output_image!=nullptr){
+    delete[] output_image;
+    output_image = nullptr;
   }
 }

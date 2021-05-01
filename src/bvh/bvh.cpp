@@ -196,6 +196,7 @@ BVH::BVH(std::vector<Sphere*>& objects){
     }
 
     tree->build();
+    delete scene;
 }
 
 BVH::~BVH(){
