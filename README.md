@@ -26,6 +26,11 @@ The above command will output a json ```.data``` file, which can be fed into the
 cd build/bin
 ./sphere_bvh_single_threaded /path/to/scene_file
 ```
+## Running multi-threaded BVH on the generated data file
+To run on 6 processes with 4 threads per process.
+```bash 
+mpiexec -np 6 --bind-to none ./bin/bvh_mpi random_spheres_scene.data 4 > img.ppm
+```
 
 # Environment Setup
 The unit test requires CMake version at least 3.11 to run, due to the FetchContent() module.
