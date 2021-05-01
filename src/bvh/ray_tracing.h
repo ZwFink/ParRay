@@ -22,6 +22,17 @@ struct traceConfig
   {}
 };
 
+/**
+ * @brief openmp version of bvh tracing
+ */
 void raytracing_bvh(const traceConfig &config);
+
+/**
+ * @brief a single thread bvh tracing for debug and profiling purpose. This method is 
+ * free of mpi or openmp premitives.
+ */
+void raytracing_bvh_single_threaded(const traceConfig &config);
+
+
 color ray_color(const ray &r, BVH &world, int depth);
 #endif
