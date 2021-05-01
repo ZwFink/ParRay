@@ -20,9 +20,12 @@ public:
     void write(std::string fileName, nlohmann::json &j);
 
     nlohmann::json read(std::string fileName);
+    std::vector<Sphere*> load_scene(std::string fileName);
+    void clear_scene(std::vector<Sphere*> &input);
 
     std::vector<sphere*> deserialize_spheres(const nlohmann::json &j);
     std::vector<Sphere*> deserialize_Spheres(const nlohmann::json &j);
 };
+
 
 #endif

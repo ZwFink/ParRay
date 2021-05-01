@@ -8,58 +8,7 @@
 #include <ctime>
 #include "boundable.h"
 #include <omp.h>
-
-color ray_color(const ray &r, BVH &world, int depth)
-{
-    hit_record rec;
-    Sphere *hitObject = nullptr;
-
-  if (depth <= 0)
-    return color(0, 0, 0);
-
-    if (world.intersect(r, &hitObject, rec))
-    {
-        ray scattered;
-        color attenuation;
-        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
-        {
-            return attenuation * ray_color(scattered, world, depth - 1);
-        }
-        else
-        {
-            return color(0, 0, 0);
-        }
-    }
-
-    //otherwise return the background color
-    vec3 unit_direction = unit_vector(r.direction());
-    auto t = 0.5 * (unit_direction.y() + 1.0);
-    return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
-}
-
-std::vector<Sphere*> load_scene(std::string fileName){
-  ShapeDataIO io;
-  nlohmann::json j = io.read(fileName);
-  return io.deserialize_Spheres(j);
-}
-
-struct traceConfig
-{
-    camera& cam;
-    BVH& world;
-    int width;
-    int height;
-    int traceDepth;
-    int samplePerPixel;
-    int numProcs;
-    int myRank;
-    int threadsPerProc;
-  traceConfig(camera &_cam, BVH &_world, int _width, int _height, int _depth, int _sample, int _numProcs, int _myRank, int _threads_per_proc)
-    :cam(_cam), world(_world), width(_width), height(_height), traceDepth(_depth), samplePerPixel(_sample),
-     numProcs(_numProcs), myRank(_myRank), threadsPerProc(_threads_per_proc)
-  {}
-};
-
+#include "ray_tracing.h"
 
 void raytracing(const traceConfig config){
     const camera &cam = config.cam;
@@ -201,7 +150,8 @@ int main(int argc, char **argv)
   MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
   std::string sceneFile = argv[1];
-  std::vector<Sphere*> scene_spheres = load_scene(sceneFile);
+  ShapeDataIO io;
+  std::vector<Sphere*> scene_spheres = io.load_scene(sceneFile);
   int num_threads = std::atoi(argv[2]);
   omp_set_num_threads(num_threads);
 
@@ -235,4 +185,6 @@ int main(int argc, char **argv)
       std::cerr << "\nDone.\n";
     }
   MPI_Finalize();
+
+  io.clear_scene(scene_spheres);
 }

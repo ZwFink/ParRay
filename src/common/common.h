@@ -17,15 +17,15 @@ using std::sqrt;
 constexpr double infinity = std::numeric_limits<double>::infinity();
 constexpr double pi = 3.1415926535897932385;
 
-double degrees_to_radians(double degrees);
+extern double degrees_to_radians(double degrees);
 
-double clamp(double x, double min, double max);
+extern double clamp(double x, double min, double max);
 
 extern thread_local std::uniform_real_distribution<double> distribution;
 extern thread_local std::mt19937 generator;
 
-double random_double();
+extern double random_double();
 
-double random_double(double min, double max);
+extern double random_double(double min, double max);
 
 #endif // COMMON_HH_INCLUDED
