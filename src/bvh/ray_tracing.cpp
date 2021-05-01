@@ -31,6 +31,39 @@ color ray_color(const ray &r, BVH &world, int depth)
     return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
+void raytracing_bvh_single_threaded(const traceConfig &config){
+    const camera &cam = config.cam;
+    const int image_width = config.width;
+    const int image_height = config.height;
+    const int max_depth = config.traceDepth;
+    const int samples_per_pixel = config.samplePerPixel;
+    BVH &world = config.world;
+    const int threadNumer = config.numProcs;
+
+    color *out_image = new color[image_width*image_height];
+
+    double tstart = omp_get_wtime();
+    {
+        for (int j = config.height - 1; j >= 0; j--)
+        {
+            for (int i = 0; i < config.width; i++)
+            {
+                color pixel_color(0, 0, 0);
+                for (int s = 0; s < samples_per_pixel; ++s)
+                {
+                    auto u = (i + random_double()) / (image_width - 1);
+                    auto v = (j + random_double()) / (image_height - 1);
+
+                    ray r = cam.get_ray(u, v);
+                    pixel_color += ray_color(r, world, max_depth);
+                }
+                out_image[((image_height - 1 - j) * image_width + i)] = pixel_color;
+            }
+        }
+    }
+   delete[] out_image;
+}
+
 void raytracing_bvh(const traceConfig &config)
 {
     const camera &cam = config.cam;
