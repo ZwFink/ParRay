@@ -43,6 +43,13 @@ std::vector<Sphere*> load_scene(std::string fileName){
   return io.deserialize_Spheres(j);
 }
 
+void clear_scene(std::vector<Sphere*> &input){
+  for(int i=0; i<input.size();i++){
+    delete input[i];
+    input[i]=nullptr;
+  }
+}
+
 struct traceConfig
 {
     camera& cam;
@@ -51,24 +58,30 @@ struct traceConfig
     int height;
     int traceDepth;
     int samplePerPixel;
-    traceConfig(camera &_cam, BVH &_world, int _width, int _height, int _depth, int _sample):cam(_cam), world(_world), width(_width), height(_height), traceDepth(_depth), samplePerPixel(_sample){}
+    color* out_image;
+    traceConfig(camera &_cam, BVH &_world, int _width, int _height, int _depth, int _sample):cam(_cam), world(_world), width(_width), height(_height), traceDepth(_depth), samplePerPixel(_sample){
+      out_image = new color[height * width];
+    }
+    ~traceConfig(){
+      delete[] out_image;
+    }
 };
 
 
-void raytracing(const traceConfig config){
+void raytracing(const traceConfig &config){
     const camera &cam = config.cam;
     const int image_width = config.width;
     const int image_height = config.height;
     const int max_depth = config.traceDepth;
     const int samples_per_pixel = config.samplePerPixel;
     BVH &world = config.world;
+    color* out_image = config.out_image;
 
   std ::cout << "P3\n"
              << image_width << ' ' << image_height << "\n255\n";
 
-  color *output_image = new color[image_height * image_width];
   double tstart = omp_get_wtime();
-#pragma omp parallel shared(output_image, cam)
+#pragma omp parallel shared(out_image, cam)
     {
 #pragma omp for schedule(dynamic)
       for(int j = config.height - 1; j >= 0; j--)
@@ -86,19 +99,17 @@ void raytracing(const traceConfig config){
                   ray r = cam.get_ray(u, v);
                   pixel_color += ray_color(r, world, max_depth);
                 }
-              output_image[((image_height - 1 - j)*image_width + i)] = pixel_color;
+              out_image[((image_height - 1 - j)*image_width + i)] = pixel_color;
             }
         }
     }
 
   double tend = omp_get_wtime();
   for(int i = 0; i < image_height * image_width; i++)
-    write_color(std::cout, output_image[i], samples_per_pixel);
+    write_color(std::cout, out_image[i], samples_per_pixel);
   std::cerr << "\n\nElapsed time: " << tend - tstart << "\n";
   std::cerr << "\nDone.\n";
 }
-
-
 
 int main(int argc, char** argv)
 {
@@ -116,10 +127,10 @@ int main(int argc, char** argv)
 
     // Image
     const auto aspect_ratio = 3.0 / 2.0;
-    const int image_width = 1200;
+    const int image_width = 100;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 10;
-    const int max_depth = 50;
+    const int samples_per_pixel = 1;
+    const int max_depth = 1;
 
   // World
   BVH world(scene_spheres);
@@ -135,4 +146,5 @@ int main(int argc, char** argv)
 
   raytracing(config);
   std::cerr << "\nDone.\n";
+  clear_scene(scene_spheres);
 }
