@@ -8,21 +8,6 @@
 #include <ctime>
 #include "boundable.h"
 
-
-std::vector<Sphere*> load_scene(std::string fileName){
-  ShapeDataIO io;
-  std::cerr<<"Loading "<<fileName<<std::endl;
-  nlohmann::json j = io.read(fileName);
-  return io.deserialize_Spheres(j);
-}
-
-void clear_scene(std::vector<Sphere*> &input){
-  for(int i=0; i<input.size();i++){
-    delete input[i];
-    input[i]=nullptr;
-  }
-}
-
 int main(int argc, char** argv)
 {
 
@@ -31,8 +16,9 @@ int main(int argc, char** argv)
     exit(1);
   }
 
+  ShapeDataIO shapeIO;
   std::string sceneFile = argv[1];
-  std::vector<Sphere*> scene_spheres = load_scene(sceneFile);
+  std::vector<Sphere*> scene_spheres = shapeIO.load_scene(sceneFile);
   int num_threads = std::atoi(argv[2]);
   std::cerr << "Rendering scene " << sceneFile << " using " << num_threads << " threads\n";
 
@@ -53,9 +39,9 @@ int main(int argc, char** argv)
   auto aperture = 0.1;
   camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 
-  traceConfig config(cam, world, image_width, image_height, max_depth, samples_per_pixel, num_threads);
+  traceConfig config(cam, world, image_width, image_height, max_depth, samples_per_pixel, num_threads, 0, 1);
 
   raytracing_bvh(config);
   std::cerr << "\nDone.\n";
-  clear_scene(scene_spheres);
+  shapeIO.clear_scene(scene_spheres);
 }

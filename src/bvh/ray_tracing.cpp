@@ -39,11 +39,9 @@ void raytracing_bvh(const traceConfig &config)
     const int max_depth = config.traceDepth;
     const int samples_per_pixel = config.samplePerPixel;
     BVH &world = config.world;
-    color *out_image = config.out_image;
-    const int threadNumer = config.threadNumber;
+    const int threadNumer = config.numProcs;
 
-    std ::cout << "P3\n"
-               << image_width << ' ' << image_height << "\n255\n";
+    color *out_image = new color[image_width*image_height];
 
     omp_set_num_threads(threadNumer);
     double tstart = omp_get_wtime();
@@ -71,8 +69,12 @@ void raytracing_bvh(const traceConfig &config)
     }
 
     double tend = omp_get_wtime();
+    
+ /*   std ::cout << "P3\n"
+               << image_width << ' ' << image_height << "\n255\n";
     for (int i = 0; i < image_height * image_width; i++)
         write_color(std::cout, out_image[i], samples_per_pixel);
     std::cerr << "\n\nElapsed time: " << tend - tstart << "\n";
-    std::cerr << "\nDone.\n";
+    std::cerr << "\nDone.\n";*/
+    delete[] out_image;
 }

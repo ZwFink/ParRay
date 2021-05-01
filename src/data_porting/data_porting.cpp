@@ -10,6 +10,18 @@
 
 using json = nlohmann::json;
 
+void ShapeDataIO::clear_scene(std::vector<Sphere*> &input){
+  for(int i=0; i<input.size();i++){
+    delete input[i];
+    input[i]=nullptr;
+  }
+}
+
+std::vector<Sphere*> ShapeDataIO::load_scene(std::string fileName){
+  nlohmann::json j = this->read(fileName);
+  return this->deserialize_Spheres(j);
+}
+
 json ShapeDataIO::serialize(const material *pMaterial){    
     json output;
     if(auto p = dynamic_cast<const metal*>(pMaterial)){
