@@ -55,11 +55,16 @@ void raytracing(const traceConfig config){
 
   double tstart = omp_get_wtime();
   MPI_Win_fence(0, window);
+  int j = my_row_start - 1;
 
-  #pragma omp parallel shared(output_image, cam)
+  #pragma omp parallel shared(output_image, cam, j)
   {
-      #pragma omp for schedule(dynamic)
-      for(int j = my_row_start - 1; j >= my_row_end; j--)
+    int my_iter = 0;
+
+    #pragma omp atomic capture
+    {my_iter = j; j--;}
+
+      while(my_iter >= my_row_end)
         {
           for(int i = 0; i < config.width; i++)
             {
@@ -67,13 +72,16 @@ void raytracing(const traceConfig config){
               for(int s = 0; s < samples_per_pixel; ++s)
                 {
                   auto u = (i + random_double()) / (image_width - 1);
-                  auto v = (j + random_double()) / (image_height - 1);
+                  auto v = (my_iter + random_double()) / (image_height - 1);
 
                   ray r = cam.get_ray(u, v);
                   pixel_color += ray_color(r, world, max_depth);
                 }
-              output_image[((image_height - 1 - j)*image_width + i)] = pixel_color;
+              output_image[((image_height - 1 - my_iter)*image_width + i)] = pixel_color;
             }
+
+          #pragma omp atomic capture
+          {my_iter = j; j--;}
         }
     }
 
@@ -89,7 +97,6 @@ void raytracing(const traceConfig config){
                num_pixels,
                MPI_COLOR, window
                );
-
     }
 
   double tend = omp_get_wtime();
@@ -192,7 +199,7 @@ int main(int argc, char **argv)
     {
       std::cerr << "\nDone.\n";
     }
-  MPI_Finalize();
 
   io.clear_scene(scene_spheres);
+  MPI_Finalize();
 }
