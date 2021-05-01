@@ -17,7 +17,7 @@ if(OpenMP_CXX_FOUND)
   target_link_libraries(bvh_mt bvhlib tracer_common shapeio nlohmann_json::nlohmann_json OpenMP::OpenMP_CXX)
 
 # an executable for single thread bvh
-  add_executable(sphere_bvh_single "sphere_bvh_openmp.cpp")
+  add_executable(sphere_bvh_single "sphere_bvh_single.cpp")
   target_include_directories(sphere_bvh_single PUBLIC "../common/" "../data_porting" "./")
   target_link_libraries(sphere_bvh_single bvhlib tracer_common shapeio nlohmann_json::nlohmann_json OpenMP::OpenMP_CXX)
 endif()

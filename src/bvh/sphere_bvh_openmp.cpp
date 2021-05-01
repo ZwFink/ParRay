@@ -11,8 +11,8 @@
 int main(int argc, char** argv)
 {
 
-  if(argc<2){
-    std::cerr<<"Usage:"<<argv[0]<<" sceneFile"<<std::endl;
+  if(argc<3){
+    std::cerr<<"Usage:"<<argv[0]<<" sceneFile num_threads"<<std::endl;
     exit(1);
   }
 
@@ -20,13 +20,14 @@ int main(int argc, char** argv)
   std::string sceneFile = argv[1];
   std::vector<Sphere*> scene_spheres = shapeIO.load_scene(sceneFile);
   int num_threads = std::atoi(argv[2]);
+  std::cerr << "Rendering scene " << sceneFile << " using " << num_threads << " threads\n";
 
     // Image
     const auto aspect_ratio = 3.0 / 2.0;
     const int image_width = 100;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
     const int samples_per_pixel = 1;
-    const int max_depth = 30;
+    const int max_depth = 1;
 
   // World
   BVH world(scene_spheres);
@@ -40,7 +41,7 @@ int main(int argc, char** argv)
 
   traceConfig config(cam, world, image_width, image_height, max_depth, samples_per_pixel, num_threads, 0, 1);
 
-  raytracing_bvh_single_threaded(config);
-
+  raytracing_bvh(config);
+  std::cerr << "\nDone.\n";
   shapeIO.clear_scene(scene_spheres);
 }
