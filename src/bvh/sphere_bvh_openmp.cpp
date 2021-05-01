@@ -13,8 +13,8 @@ color ray_color(const ray &r, BVH &world, int depth)
     hit_record rec;
     Sphere *hitObject = nullptr;
 
-    if (depth <= 0)
-        return color(0, 0, 0);
+  if (depth <= 0)
+    return color(0, 0, 0);
 
     if (world.intersect(r, &hitObject, rec))
     {
@@ -38,7 +38,7 @@ color ray_color(const ray &r, BVH &world, int depth)
 
 std::vector<Sphere*> load_scene(std::string fileName){
   ShapeDataIO io;
-  std::cout<<"Loading "<<fileName<<std::endl;
+  std::cerr<<"Loading "<<fileName<<std::endl;
   nlohmann::json j = io.read(fileName);
   return io.deserialize_Spheres(j);
 }
@@ -63,24 +63,39 @@ void raytracing(const traceConfig config){
     const int samples_per_pixel = config.samplePerPixel;
     BVH &world = config.world;
 
-   #pragma omp parallel num_threads(4) 
-   for(int j = config.height - 1; j >= 0; j--)
-    {
-      std::cerr << "\rScanlines remaining: " << j << " thread:" <<omp_get_thread_num()<< std::flush;
-      for(int i = 0; i < config.width; i++)
-        {
-          color pixel_color(0, 0, 0);
-          for(int s = 0; s < samples_per_pixel; ++s)
-            {
-              auto u = (i + random_double()) / (image_width - 1);
-              auto v = (j + random_double()) / (image_height - 1);
+  std ::cout << "P3\n"
+             << image_width << ' ' << image_height << "\n255\n";
 
-              ray r = cam.get_ray(u, v);
-              pixel_color += ray_color(r, world, max_depth);
+  color *output_image = new color[image_height * image_width];
+  double tstart = omp_get_wtime();
+#pragma omp parallel shared(output_image, cam)
+    {
+#pragma omp for schedule(dynamic)
+      for(int j = config.height - 1; j >= 0; j--)
+        {
+          // std::cerr << "\rScanlines remaining: " << j << ' ' << omp_get_thread_num() << std::endl;
+
+          for(int i = 0; i < config.width; i++)
+            {
+              color pixel_color(0, 0, 0);
+              for(int s = 0; s < samples_per_pixel; ++s)
+                {
+                  auto u = (i + random_double()) / (image_width - 1);
+                  auto v = (j + random_double()) / (image_height - 1);
+
+                  ray r = cam.get_ray(u, v);
+                  pixel_color += ray_color(r, world, max_depth);
+                }
+              output_image[((image_height - 1 - j)*image_width + i)] = pixel_color;
             }
-          write_color(std::cout, pixel_color, samples_per_pixel);
         }
     }
+
+  double tend = omp_get_wtime();
+  for(int i = 0; i < image_height * image_width; i++)
+    write_color(std::cout, output_image[i], samples_per_pixel);
+  std::cerr << "\n\nElapsed time: " << tend - tstart << "\n";
+  std::cerr << "\nDone.\n";
 }
 
 
@@ -88,20 +103,23 @@ void raytracing(const traceConfig config){
 int main(int argc, char** argv)
 {
 
-  if(argc<2){
-    std::cerr<<"Usage:"<<argv[0]<<" sceneFile"<<std::endl;
+  if(argc<3){
+    std::cerr<<"Usage:"<<argv[0]<<" sceneFile num_threads"<<std::endl;
     exit(1);
   }
 
   std::string sceneFile = argv[1];
   std::vector<Sphere*> scene_spheres = load_scene(sceneFile);
+  int num_threads = std::atoi(argv[2]);
+  omp_set_num_threads(num_threads);
+  std::cerr << "Rendering scene " << sceneFile << " using " << num_threads << " threads\n";
 
     // Image
     const auto aspect_ratio = 3.0 / 2.0;
     const int image_width = 1200;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
     const int samples_per_pixel = 10;
-    const int max_depth = 3;
+    const int max_depth = 50;
 
   // World
   BVH world(scene_spheres);
@@ -115,10 +133,6 @@ int main(int argc, char** argv)
 
   traceConfig config(cam, world, image_width, image_height, max_depth, samples_per_pixel);
 
-  std :: cerr << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-  std::clock_t c_start = std::clock();
   raytracing(config);
- std::clock_t c_end = std::clock();
   std::cerr << "\nDone.\n";
-  std::cerr << "\nTotal time: "<<(c_end-c_start)/CLOCKS_PER_SEC<<std::endl;
 }
