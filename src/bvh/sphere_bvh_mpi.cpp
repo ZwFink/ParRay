@@ -137,16 +137,14 @@ void raytracing(const traceConfig config){
 
 
 
-  MPI_Win_fence(0, window);
   double tend = omp_get_wtime();
-  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Win_fence(0, window);
   if(config.myRank == 0)
     {
       for(int i = 0; i < image_height * image_width; i++)
         write_color(std::cout, output_image[i], samples_per_pixel);
   }
   std::cerr << "\n\nElapsed time on rank: " << config.myRank << " " << tend - tstart << "\n";
-  std::cerr << "\nDone.\n";
 
   MPI_Win_free(&window);
   MPI_Free_mem(output_image);
