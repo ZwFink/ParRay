@@ -17,13 +17,11 @@ void raytracing(const traceConfig config){
     const int max_depth = config.traceDepth;
     const int samples_per_pixel = config.samplePerPixel;
     const int rows_per_process = image_height / config.numProcs;
-    const int my_row_start = (1 + config.myRank) * rows_per_process;
-    int my_row_end = config.myRank * rows_per_process;
+    int my_row_start = (1 + config.myRank) * rows_per_process;
+    const int my_row_end = config.myRank * rows_per_process;
 
-    if(config.myRank == 0)
-      {
-        my_row_end = 0;
-      }
+    if(config.myRank == config.numProcs - 1)
+      my_row_start = image_height;
 
     BVH &world = config.world;
 
@@ -31,10 +29,14 @@ void raytracing(const traceConfig config){
               << " rendering rows " << my_row_end
               << " to " << my_row_start << "\n";
 
-  std ::cout << "P3\n"
-             << image_width << ' ' << image_height << "\n255\n";
+    if(config.myRank == 0)
+      {
+        std ::cout << "P3\n"
+                   << image_width << ' ' << image_height << "\n255\n";
+      }
 
   MPI_Win window;
+  MPI_Datatype MPI_COLOR;
   color *output_image = nullptr;
   MPI_Alloc_mem(sizeof(color) * image_height * image_width,
                 MPI_INFO_NULL,
@@ -43,9 +45,13 @@ void raytracing(const traceConfig config){
 
   MPI_Win_create(output_image,
                  sizeof(color) * image_height * image_width,
-                 1,
+                 sizeof(color),
                  MPI_INFO_NULL, MPI_COMM_WORLD,
                  &window);
+
+  MPI_Type_contiguous(3, MPI_DOUBLE, &MPI_COLOR);
+  MPI_Type_commit(&MPI_COLOR);
+
 
   double tstart = omp_get_wtime();
   MPI_Win_fence(0, window);
@@ -71,19 +77,20 @@ void raytracing(const traceConfig config){
         }
     }
 
-  int offset = my_row_start - my_row_end;
+  int offset_pixels = (image_height - my_row_start) * image_width;
+  int num_pixels = (my_row_start - my_row_end) * image_width;
 
   if(config.myRank != 0)
     {
-      MPI_Put(output_image + offset, sizeof(color)*offset,
-              MPI_BYTE, 0,
-              sizeof(color)*offset,
-              sizeof(color)*offset,
-              MPI_BYTE, window
-              );
+       MPI_Put(output_image + offset_pixels,
+               num_pixels,
+               MPI_COLOR, 0,
+               offset_pixels,
+               num_pixels,
+               MPI_COLOR, window
+               );
+
     }
-
-
 
   double tend = omp_get_wtime();
   MPI_Win_fence(0, window);
@@ -125,6 +132,7 @@ void raytracing(const traceConfig config){
 
   MPI_Win_free(&window);
   MPI_Free_mem(output_image);
+  MPI_Type_free(&MPI_COLOR);
 
   delete[] receive_data;
 }
