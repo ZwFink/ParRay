@@ -50,6 +50,7 @@ void Octree::deleteOctreeNode(OctreeNode *&node)
         if (node->child[i] != nullptr)
         {
             deleteOctreeNode(node->child[i]);
+            node->child[i] = nullptr;
         }
     }
     delete node;
@@ -159,6 +160,13 @@ void Octree::build(){
     build(root, bbox);
 }
 
+Octree::~Octree(){
+    if(root!=nullptr){
+        deleteOctreeNode(root);
+        root=nullptr;
+    }
+}
+
 const vec3 BVH::planeSetNormals[kNumPlaneSetNormals] = {
     vec3(1, 0, 0),
     vec3(0, 1, 0),
@@ -179,8 +187,6 @@ BVH::BVH(std::vector<Sphere*>& objects){
         Extent* objectExtent;
         objects[i]->calculateBounds(planeSetNormals, kNumPlaneSetNormals, vec3(0), objectExtent);
         scene->extendBy(objectExtent);
-        objectExtent->object = objects[i];
-        auto ptr = objectExtent->object;
         extentList.push_back(objectExtent);
     }
     tree = new Octree(scene);
@@ -193,7 +199,16 @@ BVH::BVH(std::vector<Sphere*>& objects){
 }
 
 BVH::~BVH(){
-    delete tree;
+    if(tree!=nullptr){
+        delete tree;
+        tree = nullptr;
+    }
+    for(int i=0; i<extentList.size(); i++){
+        if(extentList[i]!=nullptr){
+            delete extentList[i];
+            extentList[i] = nullptr;
+        }
+    }
 }
 
 bool BVH::intersect(const ray &ray, Sphere **hit_object, hit_record& hit_record_out){

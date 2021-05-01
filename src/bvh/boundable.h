@@ -38,6 +38,7 @@ class Sphere: public Boundable{
     public:
     Sphere(vec3 center, double r);
     Sphere(vec3 center, double r, material*material);
+    ~Sphere();
     void calculateBounds(const vec3 normalPlanes[], const int planeSize, const vec3 origin, Extent* &outputExtent) override;
     bool hit(const ray& ray, double t_min, double t_max, hit_record &rec) const;
     vec3 center;

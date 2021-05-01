@@ -72,6 +72,7 @@ void Sphere::calculateBounds(const vec3 normalPlanes[], const int planeSize, con
         outputExtent->d[i][0] = std::min(d1, d2);
         outputExtent->d[i][1] = std::max(d1, d2);
     }
+    outputExtent->object = this;
 }
 
 bool Sphere::hit(const ray& ray, const double t_min, const double t_max, hit_record &rec) const{
@@ -103,4 +104,11 @@ bool Sphere::hit(const ray& ray, const double t_min, const double t_max, hit_rec
   rec.set_face_normal(ray, outward_normal);
   rec.mat_ptr = this->mat_ptr;
   return true;
+}
+
+Sphere::~Sphere(){
+    if(mat_ptr != nullptr){
+        delete mat_ptr;
+        mat_ptr = nullptr;
+    }
 }
