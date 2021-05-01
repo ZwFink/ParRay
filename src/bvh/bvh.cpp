@@ -28,19 +28,19 @@ BBox &BBox::extendBy(const vec3 &p)
     return *this;
 }
 
-Octree::Octree(const Extent &sceneExtent)
+Octree::Octree(const Extent* sceneExtent)
 {
-    double xDiff = sceneExtent.d[0][1] - sceneExtent.d[0][0];
-    double yDiff = sceneExtent.d[1][1] - sceneExtent.d[1][0];
-    double zDiff = sceneExtent.d[2][1] - sceneExtent.d[2][0];
+    double xDiff = sceneExtent->d[0][1] - sceneExtent->d[0][0];
+    double yDiff = sceneExtent->d[1][1] - sceneExtent->d[1][0];
+    double zDiff = sceneExtent->d[2][1] - sceneExtent->d[2][0];
     double maxDiff = std::max(xDiff, std::max(yDiff, zDiff));
     vec3 minPlusMax(
-        sceneExtent.d[0][0] + sceneExtent.d[0][1],
-        sceneExtent.d[1][0] + sceneExtent.d[1][1],
-        sceneExtent.d[2][0] + sceneExtent.d[2][1]);
+        sceneExtent->d[0][0] + sceneExtent->d[0][1],
+        sceneExtent->d[1][0] + sceneExtent->d[1][1],
+        sceneExtent->d[2][0] + sceneExtent->d[2][1]);
     bbox.bounds[0] = (minPlusMax - maxDiff) * 0.5;
     bbox.bounds[1] = (minPlusMax + maxDiff) * 0.5;
-    root = new OctreeNode;
+    root = new OctreeNode();
 }
 
 void Octree::deleteOctreeNode(OctreeNode *&node)
@@ -135,9 +135,9 @@ void Octree::build(OctreeNode *&node, const BBox &bbox)
 {
     if (node->isLeaf)
     {
-        for (const auto &e : node->nodeExtentsList)
+        for (auto &e : node->nodeExtentsList)
         {
-            node->currentNodeExtent.extendBy(*e);
+            node->currentNodeExtent->extendBy(e);
         }
     }
     else
@@ -149,7 +149,7 @@ void Octree::build(OctreeNode *&node, const BBox &bbox)
                 BBox childBox;
                 childBox_at_index(bbox, i, childBox);
                 build(node->child[i], childBox);
-                node->currentNodeExtent.extendBy(node->child[i]->currentNodeExtent);
+                node->currentNodeExtent->extendBy( const_cast<const Extent*>(node->child[i]->currentNodeExtent));
             }
         }
     }
@@ -172,13 +172,13 @@ const vec3 BVH::planeSetNormals[kNumPlaneSetNormals] = {
 
 
 BVH::BVH(std::vector<Sphere*>& objects){
-    Extent scene;
+    Extent* scene = new Extent();
     extentList.reserve(objects.size());
     for (int i = 0; i < objects.size(); i++)
     {
-        std::shared_ptr<Extent> objectExtent = make_shared<Extent>();
-        objects[i]->calculateBounds(planeSetNormals, kNumPlaneSetNormals, vec3(0), *objectExtent);
-        scene.extendBy(*objectExtent);
+        Extent* objectExtent;
+        objects[i]->calculateBounds(planeSetNormals, kNumPlaneSetNormals, vec3(0), objectExtent);
+        scene->extendBy(objectExtent);
         objectExtent->object = objects[i];
         auto ptr = objectExtent->object;
         extentList.push_back(objectExtent);
@@ -186,7 +186,7 @@ BVH::BVH(std::vector<Sphere*>& objects){
     tree = new Octree(scene);
 
     for(int i=0; i<objects.size();i++){
-        tree->insert(extentList[i].get());
+        tree->insert(const_cast<const Extent*>(extentList[i]));
     }
 
     tree->build();
@@ -211,7 +211,7 @@ bool BVH::intersect(const ray &ray, Sphere **hit_object, hit_record& hit_record_
     //first determine if the ray hit the root of octree
     double tNear = 0, tFar = DBL_MAX;
     int plane_index=-1;
-    if(!tree->root->currentNodeExtent.interset(n_dot_o, n_dot_r, tNear, tFar, plane_index) || tFar<0){
+    if(!tree->root->currentNodeExtent->interset(n_dot_o, n_dot_r, tNear, tFar, plane_index) || tFar<0){
         return false;
     }
 
@@ -240,7 +240,7 @@ bool BVH::intersect(const ray &ray, Sphere **hit_object, hit_record& hit_record_
                     double tNearChild = 0;
                     double tFarChild = tFar;
                     int planeIndex;
-                    if(node->child[i]->currentNodeExtent.interset(n_dot_o, n_dot_r, tNearChild, tFarChild, planeIndex)){
+                    if(node->child[i]->currentNodeExtent->interset(n_dot_o, n_dot_r, tNearChild, tFarChild, planeIndex)){
                         double t = (tNearChild < 0 && tFarChild >=0)?tFarChild:tNearChild;
                         queue.push(QueueElement(node->child[i],t));
                     }

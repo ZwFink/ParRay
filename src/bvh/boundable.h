@@ -14,7 +14,7 @@ class Extent
 {
 public:
     Extent();
-    void extendBy(const Extent &extents);
+    void extendBy(const Extent* extents);
     bool interset(const double *numberator, const double *denominator, double &tNear, double &tFar, int &planeIndex);
     vec3 centroid() const;
 
@@ -31,14 +31,14 @@ class Boundable{
      * @param[in] origin the origin the extent is relative to
      * @param[out] outputExtent the resulting extent
      */
-    virtual void calculateBounds(const vec3 normalPlanes[], const int planeSize, const vec3 origin, Extent &outputExtent)=0;
+    virtual void calculateBounds(const vec3 normalPlanes[], const int planeSize, const vec3 origin, Extent* &outputExtent)=0;
 };
 
 class Sphere: public Boundable{
     public:
     Sphere(vec3 center, double r);
     Sphere(vec3 center, double r, material*material);
-    void calculateBounds(const vec3 normalPlanes[], const int planeSize, const vec3 origin, Extent &outputExtent) override;
+    void calculateBounds(const vec3 normalPlanes[], const int planeSize, const vec3 origin, Extent* &outputExtent) override;
     bool hit(const ray& ray, double t_min, double t_max, hit_record &rec) const;
     vec3 center;
     material* mat_ptr;

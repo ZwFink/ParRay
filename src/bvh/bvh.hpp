@@ -25,8 +25,15 @@ struct OctreeNode
 {
     OctreeNode *child[8] = {nullptr};
     std::vector<const Extent *> nodeExtentsList; // pointer to the objects extents
-    Extent currentNodeExtent;                    // extent of the octree node itself
+    Extent* currentNodeExtent;                    // extent of the octree node itself
     bool isLeaf = true;
+    OctreeNode(){
+        currentNodeExtent = new Extent();
+    }
+    ~OctreeNode(){
+        delete currentNodeExtent;
+        currentNodeExtent = nullptr;
+    }
 };
 
 struct QueueElement 
@@ -41,7 +48,7 @@ struct QueueElement
 class Octree
 {
 public:
-    Octree(const Extent &sceneExtent);
+    Octree(const Extent* sceneExtent);
     void insert(const Extent * extent);
     void insert(OctreeNode*& node, const Extent* extents, BBox &nodeBox, int depth);
     OctreeNode *root = nullptr; // make unique son don't have to manage deallocation
@@ -60,8 +67,7 @@ class BVH{
     Octree *tree = nullptr; 
     private:
     static const vec3 planeSetNormals[kNumPlaneSetNormals];
-    std::vector<std::shared_ptr<Extent>> extentList;
-
+    std::vector<Extent*> extentList;
 };
 
 /**
