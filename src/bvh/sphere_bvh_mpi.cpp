@@ -39,7 +39,6 @@ color ray_color(const ray &r, BVH &world, int depth)
 
 std::vector<Sphere*> load_scene(std::string fileName){
   ShapeDataIO io;
-  std::cerr<<"Loading "<<fileName<<std::endl;
   nlohmann::json j = io.read(fileName);
   return io.deserialize_Spheres(j);
 }
@@ -139,12 +138,18 @@ void raytracing(const traceConfig config){
 
   double tend = omp_get_wtime();
   MPI_Win_fence(0, window);
+  double tend_all = omp_get_wtime();
   if(config.myRank == 0)
     {
       for(int i = 0; i < image_height * image_width; i++)
         write_color(std::cout, output_image[i], samples_per_pixel);
   }
-  std::cerr << "\n\nElapsed time on rank: " << config.myRank << " " << tend - tstart << "\n";
+  std::cerr << "Elapsed time on rank: " << config.myRank << " " << tend - tstart << "\n";
+
+  if(config.myRank == 0)
+    {
+      std::cerr << "Elapsed time for all processes: " << " " << tend_all - tstart << "\n";
+    }
 
   MPI_Win_free(&window);
   MPI_Free_mem(output_image);
