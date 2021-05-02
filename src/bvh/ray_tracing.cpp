@@ -31,6 +31,15 @@ color ray_color(const ray &r, BVH &world, int depth)
     return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
+void printDataSizes(const traceConfig &config){
+    std::cerr<<"traceConfig size "<<sizeof(config)<<std::endl;
+    std::cerr<<"camera size "<<sizeof(config.cam)<<std::endl;
+    std::cerr<<"width size "<<sizeof(config.width)<<std::endl;
+    std::cerr<<"height size "<<sizeof(config.height)<<std::endl;
+    std::cerr<<"BVH size "<<sizeof(config.world)<<std::endl;
+    std::cerr<<"vec3"<<sizeof(vec3)<<std::endl;
+}
+
 void raytracing_bvh_single_threaded(const traceConfig &config){
     const camera &cam = config.cam;
     const int image_width = config.width;
@@ -39,6 +48,8 @@ void raytracing_bvh_single_threaded(const traceConfig &config){
     const int samples_per_pixel = config.samplePerPixel;
     BVH &world = config.world;
     const int threadNumer = config.numProcs;
+
+    printDataSizes(config);
 
     color *out_image = new color[image_width*image_height];
 
@@ -61,6 +72,7 @@ void raytracing_bvh_single_threaded(const traceConfig &config){
             }
         }
     }
+    double tend = omp_get_wtime();
    delete[] out_image;
 }
 

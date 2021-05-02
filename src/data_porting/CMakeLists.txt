@@ -11,7 +11,7 @@
  endif()
  
  
- add_library(shapeio OBJECT "data_porting.cpp")
+ add_library(shapeio OBJECT "data_porting.cpp" "sphere_generation.cpp")
  target_link_libraries(shapeio PRIVATE nlohmann_json::nlohmann_json bvhlib)
  target_include_directories(shapeio PRIVATE "../common/" "../bvh")
  
