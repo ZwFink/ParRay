@@ -10,6 +10,34 @@
 #include <omp.h>
 #include "ray_tracing.h"
 
+color ray_color(const ray &r, BVH &world, int depth)
+{
+    hit_record rec;
+    Sphere *hitObject = nullptr;
+
+    if (depth <= 0)
+        return color(0, 0, 0);
+
+    if (world.intersect(r, &hitObject, rec))
+    {
+        ray scattered;
+        color attenuation;
+        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+        {
+            return attenuation * ray_color(scattered, world, depth - 1);
+        }
+        else
+        {
+            return color(0, 0, 0);
+        }
+    }
+
+    //otherwise return the background color
+    vec3 unit_direction = unit_vector(r.direction());
+    auto t = 0.5 * (unit_direction.y() + 1.0);
+    return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
+}
+
 void raytracing(const traceConfig config, BVH& world){
     const camera &cam = config.cam;
     const int image_width = config.width;

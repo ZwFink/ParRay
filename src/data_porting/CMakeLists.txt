@@ -12,7 +12,7 @@
  
  
  add_library(shapeio OBJECT "data_porting.cpp" "sphere_generation.cpp")
- target_link_libraries(shapeio PRIVATE nlohmann_json::nlohmann_json bvhlib)
+ target_link_libraries(shapeio PRIVATE nlohmann_json::nlohmann_json bvhlib tracer_common)
  target_include_directories(shapeio PRIVATE "../common/" "../bvh")
  
 add_executable(shapeio_main "data_main.cpp")
