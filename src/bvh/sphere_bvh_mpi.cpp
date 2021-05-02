@@ -10,7 +10,35 @@
 #include <omp.h>
 #include "ray_tracing.h"
 
-void raytracing(const traceConfig config){
+color ray_color(const ray &r, BVH &world, int depth)
+{
+    hit_record rec;
+    Sphere *hitObject = nullptr;
+
+    if (depth <= 0)
+        return color(0, 0, 0);
+
+    if (world.intersect(r, &hitObject, rec))
+    {
+        ray scattered;
+        color attenuation;
+        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+        {
+            return attenuation * ray_color(scattered, world, depth - 1);
+        }
+        else
+        {
+            return color(0, 0, 0);
+        }
+    }
+
+    //otherwise return the background color
+    vec3 unit_direction = unit_vector(r.direction());
+    auto t = 0.5 * (unit_direction.y() + 1.0);
+    return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
+}
+
+void raytracing(const traceConfig config, BVH& world){
     const camera &cam = config.cam;
     const int image_width = config.width;
     const int image_height = config.height;
@@ -22,8 +50,6 @@ void raytracing(const traceConfig config){
 
     if(config.myRank == config.numProcs - 1)
       my_row_start = image_height;
-
-    BVH &world = config.world;
 
     std::cerr << "Process " << config.myRank
               << " rendering rows " << my_row_end
@@ -185,9 +211,9 @@ int main(int argc, char **argv)
   auto aperture = 0.1;
   camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 
-  traceConfig config(cam, world, image_width, image_height, max_depth, samples_per_pixel, nprocs, my_rank, num_threads);
+  traceConfig config(cam, image_width, image_height, max_depth, samples_per_pixel, nprocs, my_rank, num_threads);
 
-  raytracing(config);
+  raytracing(config, world);
   if(my_rank == 0)
     {
       std::cerr << "\nDone.\n";

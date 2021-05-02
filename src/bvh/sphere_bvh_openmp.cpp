@@ -31,7 +31,6 @@ int main(int argc, char** argv)
 
   // World
   BVH world(scene_spheres);
-
   point3 lookfrom(13, 2, 3);
   point3 lookat(0, 0, 0);
   vec3 vup(0, 1, 0);
@@ -39,9 +38,9 @@ int main(int argc, char** argv)
   auto aperture = 0.1;
   camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 
-  traceConfig config(cam, world, image_width, image_height, max_depth, samples_per_pixel, num_threads, 0, 1);
+  traceConfig config(cam, image_width, image_height, max_depth, samples_per_pixel, num_threads, 0, 1);
 
-  raytracing_bvh(config);
+  raytracing_bvh(config, world);
   std::cerr << "\nDone.\n";
   shapeIO.clear_scene(scene_spheres);
 }

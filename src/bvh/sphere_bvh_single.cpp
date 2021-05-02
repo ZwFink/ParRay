@@ -37,9 +37,9 @@ int main(int argc, char** argv)
   auto aperture = 0.1;
   camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 
-  traceConfig config(cam, world, image_width, image_height, max_depth, samples_per_pixel, 1, 0, 1);
+  traceConfig config(cam, image_width, image_height, max_depth, samples_per_pixel, 1, 0, 1);
 
-  raytracing_bvh_single_threaded(config);
+  raytracing_bvh_single_threaded(config, world);
 
   shapeIO.clear_scene(scene_spheres);
 }
