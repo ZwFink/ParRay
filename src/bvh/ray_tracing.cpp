@@ -103,11 +103,11 @@ void raytracing_bvh(const traceConfig &config)
 
     double tend = omp_get_wtime();
     
- /*   std ::cout << "P3\n"
+    std ::cout << "P3\n"
                << image_width << ' ' << image_height << "\n255\n";
     for (int i = 0; i < image_height * image_width; i++)
         write_color(std::cout, out_image[i], samples_per_pixel);
     std::cerr << "\n\nElapsed time: " << tend - tstart << "\n";
-    std::cerr << "\nDone.\n";*/
+    std::cerr << "\nDone.\n";
     delete[] out_image;
 }
