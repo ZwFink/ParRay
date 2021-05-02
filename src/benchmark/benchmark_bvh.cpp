@@ -27,6 +27,33 @@ static void BM_Baseline_Simple_Tracing_at_sceneSize(benchmark::State &state)
 }
 BENCHMARK(BM_Baseline_Simple_Tracing_at_sceneSize)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Range(1,10);
 
+static void BM_Baseline_BVH_Tracing_at_sceneSize(benchmark::State &state)
+{
+    int size = state.range(0);
+    ShapeDataIO io;
+
+    camera cam = camera::getDefault();
+    // Image
+    const int image_width = 100;
+    const int image_height = static_cast<int>(image_width / cam.aspect_ratio);
+    const int samples_per_pixel = 100;
+    const int max_depth = 4;
+    int num_thread=1;
+    //create scene
+    SphereGeneration sphereGen;
+    std::vector<Sphere*> spheres = sphereGen.random_scene_Spheres(size);
+    BVH world(spheres);
+    //create config
+    traceConfig config(cam, image_width, image_height, max_depth, samples_per_pixel, num_thread,0,1);
+
+    for (auto _ : state){
+     raytracing_bvh(config,world);
+    }
+    io.clear_scene(spheres);
+}
+BENCHMARK(BM_Baseline_BVH_Tracing_at_sceneSize)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Range(1,10);
+
+
 
 
 static void BM_BVH_Tracing_at_threadNum(benchmark::State &state)
