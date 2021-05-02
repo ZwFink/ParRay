@@ -4,6 +4,8 @@
 #include "bvh.hpp"
 #include "camera.h"
 #include "color.h"
+#include "hittable.h"
+#include "hittable_list.h"
 
 struct traceConfig
 {
@@ -32,7 +34,9 @@ void raytracing_bvh(const traceConfig &config);
  * free of mpi or openmp premitives.
  */
 void raytracing_bvh_single_threaded(const traceConfig &config);
+void raytracing_bvh_single_threaded_debug(const traceConfig &config);
 
 
+color ray_color(const ray &r, BVH &world, hittable_list &simpleWorld, int depth);
 color ray_color(const ray &r, BVH &world, int depth);
 #endif

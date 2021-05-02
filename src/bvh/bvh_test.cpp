@@ -2,6 +2,9 @@
 #include "boundable.h"
 #include "bvh.hpp"
 #include "ray.h"
+#include "hittable.h"
+#include "hittable_list.h"
+#include "sphere.h"
 
 TEST(SanityCheck, testcase1)
 {
@@ -290,5 +293,48 @@ TEST(bvh, create_BVH_1_object_b){
     hitResult = bvh.intersect(ray_tangential, &hitObject, hitRecord);
     ASSERT_EQ(false, hitResult);
     
+    sceneObjects.clear();
+}
+
+TEST(bvh, create_BVH_2_object_b){
+    
+    hittable_list world;
+    auto ground_material = make_unique<dielectric>(1.5);
+    world.add(make_unique<sphere>(point3(-1000, 1, 1), 1000, std::move(ground_material)));
+
+    std::vector<Sphere*> sceneObjects;
+    sceneObjects.push_back(new Sphere(vec3(-1000,1,1), 1000, new dielectric(1.5)));
+    BVH bvh(sceneObjects);
+
+    ASSERT_TRUE(bvh.tree!=nullptr);
+    ASSERT_EQ(1,bvh.tree->root->nodeExtentsList.size());
+    ASSERT_EQ(true,bvh.tree->root->isLeaf);
+    ASSERT_DOUBLE_EQ(1000,bvh.tree->root->nodeExtentsList[0]->object->r);
+    vec3_eq(bvh.tree->root->nodeExtentsList[0]->object->center, vec3(-1000,1,1));
+
+    hit_record hitRecord;
+    hit_record simplehitRecord;
+
+    const ray ray_1(vec3(-0.00378218,2.30587,3.42055),vec3(0.95119,0.173424,0.255267));
+    Sphere *hitObject = nullptr;
+    bool hitResult_1 = bvh.intersect(ray_1, &hitObject, hitRecord);
+    bool simple_hitResult_1 = world.hit(ray_1, 0.001, DBL_MAX, simplehitRecord);
+    ASSERT_EQ(false, hitResult_1);//recorded as hit
+    ASSERT_EQ(false, simple_hitResult_1);
+
+
+{
+    const ray ray_2(
+       vec3(-1916.9576,220.99532,333.85254),vec3(-0.99523485,0.053933564,0.081232794));
+    bool hitResult_2 = bvh.intersect(ray_2, &hitObject, hitRecord);
+    bool simple_hitResult_2 = world.hit(ray_2, 0.001, DBL_MAX, simplehitRecord);
+    ASSERT_EQ(false, hitResult_2);//recorded as hit
+    ASSERT_EQ(false, simple_hitResult_2);
+}
+
+
+
+
+   
     sceneObjects.clear();
 }

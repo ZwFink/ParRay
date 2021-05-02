@@ -1,7 +1,7 @@
 find_package(OpenMP REQUIRED)
 find_package(MPI REQUIRED)
 
-add_compile_options(-O3 -g)
+#add_compile_options(-O3 -g)
 
 
 if(OpenMP_CXX_FOUND)
@@ -20,6 +20,11 @@ if(OpenMP_CXX_FOUND)
   add_executable(sphere_bvh_single "sphere_bvh_single.cpp")
   target_include_directories(sphere_bvh_single PUBLIC "../common/" "../data_porting" "./")
   target_link_libraries(sphere_bvh_single bvhlib tracer_common shapeio nlohmann_json::nlohmann_json OpenMP::OpenMP_CXX)
+
+# an executable for single thread bvh debug
+  add_executable(sphere_bvh_debug "sphere_bvh_detection.cpp")
+  target_include_directories(sphere_bvh_debug PUBLIC "../common/" "../data_porting" "./")
+  target_link_libraries(sphere_bvh_debug bvhlib tracer_common shapeio nlohmann_json::nlohmann_json OpenMP::OpenMP_CXX)
 endif()
 
 if(MPI_FOUND)
