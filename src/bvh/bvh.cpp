@@ -225,7 +225,7 @@ bool BVH::intersect(const ray &ray, Sphere **hit_object, hit_record& hit_record_
     }
 
     //first determine if the ray hit the root of octree
-    double tNear = 0, tFar = DBL_MAX;
+    double tNear = 0.001, tFar = DBL_MAX;
     int plane_index=-1;
     if(!tree->root->currentNodeExtent->interset(n_dot_o, n_dot_r, tNear, tFar, plane_index) || tFar<0){
         return false;
