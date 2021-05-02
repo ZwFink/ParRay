@@ -24,14 +24,16 @@ static void BM_BVH_Tracing(benchmark::State &state)
     camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 
     int num_threads = state.range(0);
-    traceConfig config(cam, world, image_width, image_height, max_depth, samples_per_pixel, num_threads,0,1);
+    traceConfig config(cam, image_width, image_height, max_depth, samples_per_pixel, num_threads,0,1);
 
     for (auto _ : state){
-     raytracing_bvh(config);
+     raytracing_bvh(config,world);
     }
     
     io.clear_scene(sceneSpheres);
 }
 BENCHMARK(BM_BVH_Tracing)->RangeMultiplier(2)->Range(1,32);
+
+
 
 BENCHMARK_MAIN();

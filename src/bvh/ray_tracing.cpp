@@ -36,17 +36,15 @@ void printDataSizes(const traceConfig &config){
     std::cerr<<"camera size "<<sizeof(config.cam)<<std::endl;
     std::cerr<<"width size "<<sizeof(config.width)<<std::endl;
     std::cerr<<"height size "<<sizeof(config.height)<<std::endl;
-    std::cerr<<"BVH size "<<sizeof(config.world)<<std::endl;
     std::cerr<<"vec3"<<sizeof(vec3)<<std::endl;
 }
 
-void raytracing_bvh_single_threaded(const traceConfig &config){
+void raytracing_bvh_single_threaded(const traceConfig &config, BVH &world){
     const camera &cam = config.cam;
     const int image_width = config.width;
     const int image_height = config.height;
     const int max_depth = config.traceDepth;
     const int samples_per_pixel = config.samplePerPixel;
-    BVH &world = config.world;
     const int threadNumer = config.numProcs;
 
     printDataSizes(config);
@@ -76,14 +74,13 @@ void raytracing_bvh_single_threaded(const traceConfig &config){
    delete[] out_image;
 }
 
-void raytracing_bvh(const traceConfig &config)
+void raytracing_bvh(const traceConfig &config, BVH &world)
 {
     const camera &cam = config.cam;
     const int image_width = config.width;
     const int image_height = config.height;
     const int max_depth = config.traceDepth;
     const int samples_per_pixel = config.samplePerPixel;
-    BVH &world = config.world;
     const int threadNumer = config.numProcs;
 
     color *out_image = new color[image_width*image_height];

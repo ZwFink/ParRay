@@ -10,7 +10,7 @@
 #include <omp.h>
 #include "ray_tracing.h"
 
-void raytracing(const traceConfig config){
+void raytracing(const traceConfig config, BVH& world){
     const camera &cam = config.cam;
     const int image_width = config.width;
     const int image_height = config.height;
@@ -22,8 +22,6 @@ void raytracing(const traceConfig config){
 
     if(config.myRank == config.numProcs - 1)
       my_row_start = image_height;
-
-    BVH &world = config.world;
 
     std::cerr << "Process " << config.myRank
               << " rendering rows " << my_row_end
@@ -185,9 +183,9 @@ int main(int argc, char **argv)
   auto aperture = 0.1;
   camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 
-  traceConfig config(cam, world, image_width, image_height, max_depth, samples_per_pixel, nprocs, my_rank, num_threads);
+  traceConfig config(cam, image_width, image_height, max_depth, samples_per_pixel, nprocs, my_rank, num_threads);
 
-  raytracing(config);
+  raytracing(config, world);
   if(my_rank == 0)
     {
       std::cerr << "\nDone.\n";

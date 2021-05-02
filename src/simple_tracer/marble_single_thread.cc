@@ -130,10 +130,6 @@ int main()
   color *output_image = new color[image_height * image_width];
   double tstart = omp_get_wtime();
 
-  omp_set_num_threads(8);
-#pragma omp parallel shared(output_image, cam)
-  {
-#pragma omp for schedule(dynamic)
   for(int j = image_height - 1; j >= 0; j--)
     {
       // std::cerr << "\rScanlines remaining: " << j << ' ' << omp_get_thread_num() << std::endl;
@@ -152,7 +148,6 @@ int main()
           output_image[((image_height - 1 - j)*image_width + i)] = pixel_color;
         }
     }
-  }
   double tend = omp_get_wtime();
   for(int i = 0; i < image_height * image_width; i++)
     write_color(std::cout, output_image[i], samples_per_pixel);
