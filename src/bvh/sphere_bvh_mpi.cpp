@@ -8,9 +8,45 @@
 #include <ctime>
 #include "boundable.h"
 #include <omp.h>
+#include <thread>
+#include <atomic>
 #include "ray_tracing.h"
 
-void raytracing(const traceConfig config){
+void render_loop(const traceConfig& config, const int my_row_end, color *output_image, std::atomic_int& row_iter)
+{
+  const camera& cam = config.cam;
+  const int samples_per_pixel = config.samplePerPixel;
+  const int image_width = config.width;
+  const int image_height = config.height;
+  const int max_depth = config.traceDepth;
+
+  BVH &world = config.world;
+
+  int my_iter = 0;
+  my_iter = row_iter--;
+
+  while(my_iter >= my_row_end)
+    {
+      for(int i = 0; i < image_width; i++)
+        {
+          color pixel_color(0, 0, 0);
+          for(int s = 0; s < samples_per_pixel; ++s)
+            {
+              auto u = (i + random_double()) / (image_width - 1);
+              auto v = (my_iter + random_double()) / (image_height - 1);
+
+              ray r = cam.get_ray(u, v);
+              pixel_color += ray_color(r, world, max_depth);
+            }
+          output_image[((image_height - 1 - my_iter)*image_width + i)] = pixel_color;
+        }
+
+      my_iter = row_iter--;
+    }
+}
+
+
+void raytracing(const traceConfig config, int num_threads){
     const camera &cam = config.cam;
     const int image_width = config.width;
     const int image_height = config.height;
@@ -22,8 +58,6 @@ void raytracing(const traceConfig config){
 
     if(config.myRank == config.numProcs - 1)
       my_row_start = image_height;
-
-    BVH &world = config.world;
 
     std::cerr << "Process " << config.myRank
               << " rendering rows " << my_row_end
@@ -55,34 +89,19 @@ void raytracing(const traceConfig config){
 
   double tstart = omp_get_wtime();
   MPI_Win_fence(0, window);
-  int j = my_row_start - 1;
+  std::atomic_int remaining_iters{my_row_start-1};
 
-  #pragma omp parallel shared(output_image, cam, j)
-  {
-    int my_iter = 0;
-
-    #pragma omp atomic capture
-    {my_iter = j; j--;}
-
-      while(my_iter >= my_row_end)
-        {
-          for(int i = 0; i < config.width; i++)
-            {
-              color pixel_color(0, 0, 0);
-              for(int s = 0; s < samples_per_pixel; ++s)
-                {
-                  auto u = (i + random_double()) / (image_width - 1);
-                  auto v = (my_iter + random_double()) / (image_height - 1);
-
-                  ray r = cam.get_ray(u, v);
-                  pixel_color += ray_color(r, world, max_depth);
-                }
-              output_image[((image_height - 1 - my_iter)*image_width + i)] = pixel_color;
-            }
-
-          #pragma omp atomic capture
-          {my_iter = j; j--;}
-        }
+  std::thread threads[num_threads];
+  for(int i = 0; i < num_threads; i++)
+    {
+      threads[i] = std::thread(render_loop,
+                               std::ref(config), my_row_end,
+                               output_image, std::ref(remaining_iters)
+                               );
+    }
+  for(int i = 0; i < num_threads; i++)
+    {
+      threads[i].join();
     }
 
   int offset_pixels = (image_height - my_row_start) * image_width;
@@ -179,7 +198,7 @@ int main(int argc, char **argv)
     const auto aspect_ratio = 3.0 / 2.0;
     const int image_width = 1200;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 10;
+    const int samples_per_pixel = 500;
     const int max_depth = 50;
 
   // World
@@ -194,7 +213,7 @@ int main(int argc, char **argv)
 
   traceConfig config(cam, world, image_width, image_height, max_depth, samples_per_pixel, nprocs, my_rank, num_threads);
 
-  raytracing(config);
+  raytracing(config, num_threads);
   if(my_rank == 0)
     {
       std::cerr << "\nDone.\n";
