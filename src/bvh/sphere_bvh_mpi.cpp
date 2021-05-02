@@ -191,7 +191,9 @@ int main(int argc, char **argv)
 
   if(my_rank == 0)
     {
-      std::cerr << "Rendering scene " << sceneFile << " using " << num_threads << " threads\n";
+      std::cerr << "Rendering scene " << sceneFile
+                << " using " << num_threads
+                << " threads per process, " << nprocs << " processes.\n";
     }
 
     // Image
