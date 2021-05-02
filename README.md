@@ -31,7 +31,10 @@ To run on 6 processes with 4 threads per process.
 ```bash 
 mpiexec -np 6 --bind-to none ./bin/bvh_mpi random_spheres_scene.data 4 > img.ppm
 ```
-
+## Running bench mark
+```bash
+./build/bin/bm_ray_tracing
+```
 # Environment Setup
 The unit test requires CMake version at least 3.11 to run, due to the FetchContent() module.
 
