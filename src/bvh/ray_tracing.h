@@ -10,6 +10,7 @@
 struct traceConfig
 {
     camera& cam;
+    bool printOutput;
     int width;
     int height;
     int traceDepth;
@@ -17,10 +18,8 @@ struct traceConfig
     int numProcs;
     int myRank;
     int threadsPerProc;
-    traceConfig(camera &_cam, int _width, int _height, int _depth, int _sample, int _numProcs, int _myRank, int _threads_per_proc)
-    :cam(_cam), width(_width), height(_height), traceDepth(_depth), samplePerPixel(_sample),
-     numProcs(_numProcs), myRank(_myRank), threadsPerProc(_threads_per_proc)
-  {}
+    traceConfig(camera &_cam, int _width, int _height, int _depth, int _sample, int _numProcs, int _myRank, int _threads_per_proc): traceConfig(_cam, _width, _height, _depth, _sample, _numProcs, _myRank, _threads_per_proc, false){}
+    traceConfig(camera &_cam, int _width, int _height, int _depth, int _sample, int _numProcs, int _myRank, int _threads_per_proc, bool _print_output)    :cam(_cam), width(_width), height(_height), traceDepth(_depth), samplePerPixel(_sample), numProcs(_numProcs), myRank(_myRank), threadsPerProc(_threads_per_proc), printOutput(_print_output){}
 };
 
 /**
