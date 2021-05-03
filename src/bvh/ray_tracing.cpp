@@ -142,8 +142,8 @@ void raytracing_bvh(const traceConfig &config, BVH &world)
                    << image_width << ' ' << image_height << "\n255\n";
         for (int i = 0; i < image_height * image_width; i++)
             write_color(std::cout, out_image[i], samples_per_pixel);
-    std::cerr << "\n\nElapsed time: " << tend - tstart << "\n";
-    std::cerr << "\nDone.\n";
+        std::cerr << "\n\nElapsed time: " << tend - tstart << "\n";
+        std::cerr << "\nDone.\n";
     }
     delete[] out_image;
 }
@@ -176,4 +176,86 @@ void raytracing_hittablelist(const traceConfig &config, hittable_list &world)
             out_image[((image_height - 1 - j) * image_width + i)] = pixel_color;
         }
     }
+}
+
+bool getTileIndexes(const int width, const int height, const int tileSize, const int id, int &startRow, int &startCol, int &endRow, int &endCol)
+{
+    const int excess_cols = width % tileSize;
+    const int fullWidth = width + (tileSize - excess_cols) % tileSize;
+    const int excess_rows = height % tileSize;
+    const int fullHeight = height + (tileSize - excess_rows) % tileSize;
+
+    const int tile_columns = fullWidth / tileSize;
+    const int tile_rows = fullHeight / tileSize;
+
+    const int rowOfTile = id / tile_columns;
+    const int colOfTile = id % tile_columns;
+
+    if (rowOfTile >= tile_rows)
+    {
+        return false;
+    }
+
+    startRow = rowOfTile * tileSize;
+    startCol = colOfTile * tileSize;
+    endRow = std::min(height, startRow + tileSize);
+    endCol = std::min(width, startCol + tileSize);
+    return true;
+}
+
+void raytracing_bvh_tiled(const traceConfig &config, BVH &world, const int tileSize)
+{
+    const camera &cam = config.cam;
+    const int image_width = config.width;
+    const int image_height = config.height;
+    const int max_depth = config.traceDepth;
+    const int samples_per_pixel = config.samplePerPixel;
+    const int threadNumer = config.numProcs;
+
+    color *out_image = new color[image_width * image_height];
+
+    omp_set_num_threads(threadNumer);
+
+    double tstart = omp_get_wtime();
+#pragma omp parallel shared(out_image, cam)
+    {
+        int threadId = omp_get_thread_num();
+        int numThreads = omp_get_num_threads();
+        int startRow, startCol, endRow, endCol;
+
+        int tileId = threadId; // initial value to be threadId
+        while (getTileIndexes(image_width, image_height, tileSize, tileId, startRow, startCol, endRow, endCol))
+        {
+            for (int j = startRow; j < endRow; j++)
+            {
+                for (int i = startCol; i < endCol; i++)
+                {
+                    color pixel_color(0, 0, 0);
+                    for (int s = 0; s < samples_per_pixel; ++s)
+                    {
+                        auto u = (i + random_double()) / (image_width - 1);
+                        auto v = (j + random_double()) / (image_height - 1);
+
+                        ray r = cam.get_ray(u, v);
+                        pixel_color += ray_color(r, world, max_depth);
+                    }
+                    out_image[((image_height-1-j) * image_width + i)] = pixel_color;
+                }
+            }
+            tileId+=numThreads;
+        }
+    }
+
+    double tend = omp_get_wtime();
+
+    if (config.printOutput)
+    {
+        std ::cout << "P3\n"
+                   << image_width << ' ' << image_height << "\n255\n";
+        for (int i = 0; i < image_height * image_width; i++)
+            write_color(std::cout, out_image[i], samples_per_pixel);
+        std::cerr << "\n\nElapsed time: " << tend - tstart << "\n";
+        std::cerr << "\nDone.\n";
+    }
+    delete[] out_image;
 }

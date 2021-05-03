@@ -35,5 +35,7 @@ void raytracing_bvh_single_threaded(const traceConfig &config, BVH &world);
 
 void raytracing_hittablelist(const traceConfig &config, hittable_list &world);
 
+bool getTileIndexes(const int width, const int height, const int tileSize, const int id, int &startRow, int &startCol, int &endRow, int &endCol);
+void raytracing_bvh_tiled(const traceConfig &config, BVH &world, const int tileSize);
 
 #endif
