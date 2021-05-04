@@ -19,4 +19,3 @@ if(benchmark_FOUND)
 else(benchmark_FOUND)
     message(WARNING "google benchmark NOT found.")
 endif(benchmark_FOUND)
-
