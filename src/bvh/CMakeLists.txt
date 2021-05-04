@@ -32,6 +32,7 @@ if(MPI_FOUND)
   target_include_directories(bvh_mpi PUBLIC "../common/" "../data_porting" "./")
   include_directories(SYSTEM ${MPI_INCLUDE_PATH})
   target_link_libraries(bvh_mpi bvhlib tracer_common shapeio nlohmann_json::nlohmann_json OpenMP::OpenMP_CXX ${MPI_CXX_LIBRARIES})
+
 endif()
 
 
