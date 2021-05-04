@@ -44,7 +44,7 @@ void work_distributor_loop(const traceConfig& config,
 
       int requesting_process = incoming_request_buf;
       // calculate the work that should be distributed
-      int num_rows = remaining_rows / (2*num_procs);
+      int num_rows = remaining_rows / (3*num_procs);
 
       if(num_rows > 0)
         {
@@ -54,9 +54,14 @@ void work_distributor_loop(const traceConfig& config,
             }
           outgoing_request_buf[0] = last_row_assigned;
           // each process does inclusive render of rows assigned to it
-          outgoing_request_buf[1] = last_row_assigned + num_rows - 1;
-          last_row_assigned += num_rows;
+          outgoing_request_buf[1] = last_row_assigned + num_rows;
+          last_row_assigned += num_rows - 1;
           remaining_rows -= num_rows;
+          if(remaining_rows < minimum_assignment)
+            {
+            outgoing_request_buf[1] = total_rows - 1;
+            remaining_rows = 0;
+            }
         }
       else
         {
@@ -110,7 +115,6 @@ void request_work(int myRank,
 
 void render_loop(const traceConfig& config, color *output_image,
                  std::atomic_int& row_iter, std::atomic_int& row_end,
-                 std::atomic<bool>& requestor_complete,
                  std::atomic<bool>& render_complete,
                  std::condition_variable& get_work_var,
                  std::mutex& wait_mutex,
@@ -127,7 +131,6 @@ void render_loop(const traceConfig& config, color *output_image,
   const int image_width = config.width;
   const int image_height = config.height;
   const int max_depth = config.traceDepth;
-  bool was_requesting_thread = false;
   int last_row_end = prev_row_end;
   int last_row_start = prev_row_start;
   BVH &world = config.world;
@@ -136,14 +139,14 @@ void render_loop(const traceConfig& config, color *output_image,
 
  RENDER_LOOP:
   my_iter = row_iter--;
-  while(my_iter >= row_end && my_iter > 0)
+  while(my_iter >= row_end && my_iter >= 0)
     {
-  if(render_complete)
-    {
-      requestor_complete = true;
-      get_work_var.notify_all();
-    return;
-    }
+      if(render_complete)
+        {
+          threads_seen = 0;
+          get_work_var.notify_all();
+          return;
+        }
 
       for(int i = 0; i < image_width; i++)
         {
@@ -157,22 +160,16 @@ void render_loop(const traceConfig& config, color *output_image,
               pixel_color += ray_color(r, world, max_depth);
             }
           int access_idx = ((image_height - 1 - my_iter)*image_width + i);
-
-          if(access_idx < 0)
-            std::cerr << "BAD! Access too small! " << access_idx << std::endl;;
-
-          if(access_idx >= image_width*image_height)
-            std::cerr << "BAD! Access too big! " << access_idx << " " << image_width * image_height << " " << my_iter << std::endl;;
           output_image[((image_height - 1 - my_iter)*image_width + i)] = pixel_color;
         }
 
       my_iter = row_iter--;
     }
 
-  if(my_iter == row_end - 1)
+  ++threads_seen;
+
+  if(threads_seen == num_threads)
     {
-      requestor_complete = false;
-      was_requesting_thread = true;
       last_row_end = prev_row_end;
       last_row_start = prev_row_start;
 
@@ -187,43 +184,35 @@ void render_loop(const traceConfig& config, color *output_image,
       prev_row_end = prev_end;
       prev_row_start = prev_start;
 
+      int offset_pixels = (image_height - last_row_start - 1) * image_width;
+      int num_pixels = (1 + last_row_start - last_row_end) * image_width;
+      threads_seen = 0;
+
       // done: the start and end are eqal to some value
       if(row_end == RENDER_COMPLETE && row_iter == RENDER_COMPLETE)
         render_complete = true;
 
-
-      requestor_complete = true;
       get_work_var.notify_all();
-      // note: all threads will wake up before notify_all returns, so this is safe
+
+      if(!(last_row_start == 0 && last_row_end == 0))
+        {
+          MPI_Put(output_image + offset_pixels,
+                  num_pixels,
+                  color_type, 0,
+                  offset_pixels,
+                  num_pixels,
+                  color_type, window
+                  );
+        }
+
+      if(render_complete)
+        return;
     }
   else
     {
-      // wait on requestor_complete
       std::unique_lock<std::mutex> ul(wait_mutex);
-      threads_seen++;
-      get_work_var.wait(ul, [&] {return requestor_complete.load();});
-      int ts = threads_seen--;
-      if(ts == 1)
-        requestor_complete = false;
+      get_work_var.wait(ul, [&] {return threads_seen == 0 || render_complete.load();});
     }
-
-  if(was_requesting_thread)
-    {
-      int offset_pixels = (image_height - last_row_start) * image_width;
-      int num_pixels = (last_row_start - last_row_end) * image_width;
-
-      MPI_Put(output_image + offset_pixels,
-              num_pixels,
-              color_type, 0,
-              offset_pixels,
-              num_pixels,
-              color_type, window
-              );
-
-      was_requesting_thread = false;
-    }
-
-
   goto RENDER_LOOP;
 }
 
@@ -271,7 +260,7 @@ void raytracing(const traceConfig config, int num_threads){
 
   // TODO: change this
   // TODO: add thread_config as analog to traceConfig
-  int minimum_distribution = num_threads;
+  int minimum_distribution = 2*num_threads;
   if(config.myRank == 0)
     {
       std::thread work_distributor = std::thread(work_distributor_loop,
@@ -282,7 +271,6 @@ void raytracing(const traceConfig config, int num_threads){
     }
   else
     {
-          std::atomic<bool> requestor_complete{false};
           std::atomic<bool> render_complete{false};
           std::condition_variable work_var;
           std::mutex wait_mutex;
@@ -291,6 +279,7 @@ void raytracing(const traceConfig config, int num_threads){
           std::atomic_int threads_seen{0};
 
           std::thread threads[num_threads];
+
           for(int i = 0; i < num_threads; i++)
             {
               threads[i] = std::thread(render_loop,
@@ -298,7 +287,6 @@ void raytracing(const traceConfig config, int num_threads){
                                        output_image,
                                        std::ref(remaining_iters),
                                        std::ref(row_end),
-                                       std::ref(requestor_complete),
                                        std::ref(render_complete),
                                        std::ref(work_var),
                                        std::ref(wait_mutex),
@@ -367,9 +355,9 @@ int main(int argc, char **argv)
 {
 
   int multithread_support = 0;
-  MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &multithread_support);
+  MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &multithread_support);
 
-  assert(multithread_support == MPI_THREAD_FUNNELED);
+  assert(multithread_support == MPI_THREAD_SERIALIZED);
 
   if(argc<3){
     std::cerr<<"Usage:"<<argv[0]<<" sceneFile num_threads"<<std::endl;
@@ -385,7 +373,6 @@ int main(int argc, char **argv)
   ShapeDataIO io;
   std::vector<Sphere*> scene_spheres = io.load_scene(sceneFile);
   int num_threads = std::atoi(argv[2]);
-  omp_set_num_threads(num_threads);
 
   if(my_rank == 0)
     {
