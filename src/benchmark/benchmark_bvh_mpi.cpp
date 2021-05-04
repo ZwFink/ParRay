@@ -185,7 +185,7 @@ void mpi_benchmark(benchmark::State &state)
   }
   if(rank==0){
     for(int i=0;i<nprocs;i++){
-      char label[10];
+      char label[128];
       snprintf(label,sizeof(label),"process%i",i);
       std::string slabel=label;
       state.counters[slabel] = perCpuTime[i];
