@@ -2,6 +2,7 @@
 #include "boundable.h"
 #include "bvh.hpp"
 #include "ray.h"
+#include "ray_tracing.h"
 
 TEST(SanityCheck, testcase1)
 {
@@ -292,3 +293,42 @@ TEST(bvh, create_BVH_1_object_b){
     
     sceneObjects.clear();
 }
+
+void assert_right_tile_indexes(int w, int h, int t_s, int id, int exp_sr, int exp_sc, int exp_er, int exp_ec){
+    int startRow=-1;
+    int startCol=-1;
+    int endRow=-1;
+    int endCol=-1;
+    getTileIndexes(w, h, t_s, id, startRow, startCol, endRow, endCol);
+    ASSERT_EQ(exp_sr, startRow)<<"id "<<id;
+    ASSERT_EQ(exp_er, endRow)<<"id "<<id;
+    ASSERT_EQ(exp_sc, startCol)<<"id "<<id;
+    ASSERT_EQ(exp_ec, endCol)<<"id "<<id;
+}
+
+TEST(ray_tracing, tile_indexes_calculation){
+    {
+    int width = 16;
+    int height = 16;
+    int tileSize = 8;
+    assert_right_tile_indexes(width, height, tileSize,0,0,0,8,8);
+    assert_right_tile_indexes(width, height, tileSize,1,0,8,8,16);
+    assert_right_tile_indexes(width, height, tileSize,2,8,0,16,8);
+    assert_right_tile_indexes(width, height, tileSize,3,8,8,16,16);
+    }
+    {
+    int width = 17;
+    int height = 17;
+    int tileSize = 8;
+    assert_right_tile_indexes(width, height, tileSize,0,0,0,8,8);
+    assert_right_tile_indexes(width, height, tileSize,1,0,8,8,16);
+    assert_right_tile_indexes(width, height, tileSize,2,0,16,8,17);
+    assert_right_tile_indexes(width, height, tileSize,3,8,0,16,8);
+    assert_right_tile_indexes(width, height, tileSize,4,8,8,16,16);
+    assert_right_tile_indexes(width, height, tileSize,5,8,16,16,17);
+    assert_right_tile_indexes(width, height, tileSize,6,16,0,17,8);
+    assert_right_tile_indexes(width, height, tileSize,7,16,8,17,16);
+    assert_right_tile_indexes(width, height, tileSize,8,16,16,17,17);
+    }
+}
+

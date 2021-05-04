@@ -218,6 +218,7 @@ void render_loop(const traceConfig& config, color *output_image,
 
 
 void raytracing(const traceConfig config, int num_threads){
+
     const camera &cam = config.cam;
     const int image_width = config.width;
     const int image_height = config.height;
@@ -398,7 +399,7 @@ int main(int argc, char **argv)
   auto aperture = 0.1;
   camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 
-  traceConfig config(cam, world, image_width, image_height, max_depth, samples_per_pixel, nprocs, my_rank, num_threads);
+  traceConfig config(cam, image_width, image_height, max_depth, samples_per_pixel, nprocs, my_rank, num_threads);
 
   raytracing(config, num_threads);
   if(my_rank == 0)
