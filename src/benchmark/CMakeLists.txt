@@ -1,4 +1,6 @@
 find_package(benchmark REQUIRED)
+set(LDFLAGS "/home/zanef2/ceesd/miniforge3/envs/ceesd/lib")
+include_directories("/home/zanef2/ceesd/miniforge3/envs/ceesd/include")
 if(benchmark_FOUND)
     message(STATUS "google benchmark found.")
 
@@ -12,4 +14,3 @@ if(benchmark_FOUND)
 else(benchmark_FOUND)
     message(WARNING "google benchmark NOT found.")
 endif(benchmark_FOUND)
-
