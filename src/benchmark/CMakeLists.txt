@@ -16,6 +16,12 @@ if(benchmark_FOUND)
     target_include_directories(bm_mpi PUBLIC "../common/" "../data_porting" "../bvh")
     include_directories(SYSTEM ${MPI_INCLUDE_PATH})
     target_link_libraries(bm_mpi bvhlib tracer_common shapeio nlohmann_json::nlohmann_json OpenMP::OpenMP_CXX ${MPI_CXX_LIBRARIES} benchmark pthread)
+
+    add_executable(bm_mpi_lb "benchmark_bvh_mpi_lb.cpp")
+    target_include_directories(bm_mpi_lb PUBLIC "../common/" "../data_porting" "../bvh")
+    include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+    target_link_libraries(bm_mpi_lb bvhlib tracer_common shapeio nlohmann_json::nlohmann_json OpenMP::OpenMP_CXX ${MPI_CXX_LIBRARIES} benchmark pthread)
+
 else(benchmark_FOUND)
     message(WARNING "google benchmark NOT found.")
 endif(benchmark_FOUND)
