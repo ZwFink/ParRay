@@ -14,6 +14,34 @@
 #include "ray_tracing.h"
 #define RENDER_COMPLETE std::numeric_limits<int>::min()
 
+static color ray_color(const ray &r, BVH &world, int depth)
+{
+  hit_record rec;
+  Sphere *hitObject = nullptr;
+
+  if (depth <= 0)
+    return color(0, 0, 0);
+
+  if (world.intersect(r, &hitObject, rec))
+  {
+    ray scattered;
+    color attenuation;
+    if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+    {
+      return attenuation * ray_color(scattered, world, depth - 1);
+    }
+    else
+    {
+      return color(0, 0, 0);
+    }
+  }
+
+  //otherwise return the background color
+  vec3 unit_direction = unit_vector(r.direction());
+  auto t = 0.5 * (unit_direction.y() + 1.0);
+  return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
+}
+
 // a global distributor that processes request work from
 void work_distributor_loop(const traceConfig& config,
                            int minimum_assignment
@@ -113,7 +141,8 @@ void request_work(int myRank,
 }
 
 
-void render_loop(const traceConfig& config, color *output_image,
+void render_loop(const traceConfig& config, BVH& world,
+                 color *output_image,
                  std::atomic_int& row_iter, std::atomic_int& row_end,
                  std::atomic<bool>& render_complete,
                  std::condition_variable& get_work_var,
@@ -133,7 +162,6 @@ void render_loop(const traceConfig& config, color *output_image,
   const int max_depth = config.traceDepth;
   int last_row_end = prev_row_end;
   int last_row_start = prev_row_start;
-  BVH &world = config.world;
 
   int my_iter = 0;
 
@@ -217,7 +245,7 @@ void render_loop(const traceConfig& config, color *output_image,
 }
 
 
-void raytracing(const traceConfig config, int num_threads){
+void raytracing(const traceConfig config, BVH &world, int num_threads){
 
     const camera &cam = config.cam;
     const int image_width = config.width;
@@ -285,6 +313,7 @@ void raytracing(const traceConfig config, int num_threads){
             {
               threads[i] = std::thread(render_loop,
                                        std::ref(config),
+                                       std::ref(world),
                                        output_image,
                                        std::ref(remaining_iters),
                                        std::ref(row_end),
@@ -401,7 +430,7 @@ int main(int argc, char **argv)
 
   traceConfig config(cam, image_width, image_height, max_depth, samples_per_pixel, nprocs, my_rank, num_threads);
 
-  raytracing(config, num_threads);
+  raytracing(config, world, num_threads);
   if(my_rank == 0)
     {
       std::cerr << "\nDone.\n";
