@@ -29,8 +29,11 @@ cd build/bin
 ## Running multi-threaded BVH on the generated data file
 To run on 6 processes with 4 threads per process.
 ```bash 
-mpiexec -np 6 --bind-to none ./bin/bvh_mpi random_spheres_scene.data 4 > img.ppm
+mpiexec -np 7 --bind-to none ./bin/bvh_mpi random_spheres_scene.data 4 > img.ppm
 ```
+Note that 7 processes are created in the above example. This is because an extra process is created for the load balancing mechanism
+that dynamically dispatches work to the other MPI processes that are executing the render. The process that runs the load balancing
+mechanism runs in a single thread.
 ## Running bench mark
 ```bash
 ./build/bin/bm_ray_tracing
