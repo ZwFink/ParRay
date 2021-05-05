@@ -33,7 +33,8 @@ mpiexec -np 7 --bind-to none ./bin/bvh_mpi random_spheres_scene.data 4 > img.ppm
 ```
 Note that 7 processes are created in the above example. This is because an extra process is created for the load balancing mechanism
 that dynamically dispatches work to the other MPI processes that are executing the render. The process that runs the load balancing
-mechanism runs in a single thread.
+mechanism runs in a single thread. So 6 processes are created, each executing the render using 4 threads for a total of 24 worker threads, while
+the 7th process distributes work to the other processes.
 ## Running bench mark
 ```bash
 ./build/bin/bm_ray_tracing
