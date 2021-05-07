@@ -5,6 +5,7 @@
 #include "camera.h"
 #include "sphere_generation.h"
 
+/*
 static void BM_Baseline_Simple_Tracing_at_sceneSize(benchmark::State &state)
 {
     int size = state.range(0);
@@ -52,6 +53,7 @@ static void BM_Baseline_BVH_Tracing_at_sceneSize(benchmark::State &state)
     io.clear_scene(spheres);
 }
 BENCHMARK(BM_Baseline_BVH_Tracing_at_sceneSize)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Range(1,10);
+*/
 
 static void BM_BVH_Tracing_OMP_threadsNum_tileSize(benchmark::State &state)
 {
@@ -63,11 +65,11 @@ static void BM_BVH_Tracing_OMP_threadsNum_tileSize(benchmark::State &state)
     // Image
     const int image_width = 1200;
     const int image_height = static_cast<int>(image_width / cam.aspect_ratio);
-    const int samples_per_pixel = 10;
-    const int max_depth = 5;
+    const int samples_per_pixel = 500;
+    const int max_depth = 10;
     //create scene
     SphereGeneration sphereGen;
-    std::vector<Sphere*> spheres = sphereGen.random_scene_Spheres(5);
+    std::vector<Sphere*> spheres = sphereGen.random_scene_Spheres(20);
     BVH world(spheres);
     //create config
     traceConfig config(cam, image_width, image_height, max_depth, samples_per_pixel, num_thread,0,1);
@@ -77,20 +79,22 @@ static void BM_BVH_Tracing_OMP_threadsNum_tileSize(benchmark::State &state)
     }
     io.clear_scene(spheres);
 }
-BENCHMARK(BM_BVH_Tracing_OMP_threadsNum_tileSize)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({{1, 8}, {1, 64}});
+BENCHMARK(BM_BVH_Tracing_OMP_threadsNum_tileSize)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({{4, 64}, {1, 64}});
 
 static void BM_BVH_Tracing_at_threadNum(benchmark::State &state)
 {
     ShapeDataIO io;
-    std::vector<Sphere *> sceneSpheres = io.load_scene("./random_spheres_scene.data");
+
+    SphereGeneration sphereGen;
+    std::vector<Sphere*> spheres = sphereGen.random_scene_Spheres(20);
 
     camera cam = camera::getDefault();
     // Image
     const int image_width = 1200;
     const int image_height = static_cast<int>(image_width / cam.aspect_ratio);
-    const int samples_per_pixel = 10;
-    const int max_depth = 5;
-    BVH world(sceneSpheres);
+    const int samples_per_pixel = 500;
+    const int max_depth = 10;
+    BVH world(spheres);
 
     int num_threads = state.range(0);
     traceConfig config(cam, image_width, image_height, max_depth, samples_per_pixel, num_threads,0,1);
@@ -99,9 +103,9 @@ static void BM_BVH_Tracing_at_threadNum(benchmark::State &state)
      raytracing_bvh(config,world);
     }
     
-    io.clear_scene(sceneSpheres);
+    io.clear_scene(spheres);
 }
-BENCHMARK(BM_BVH_Tracing_at_threadNum)->RangeMultiplier(2)->Range(1,32)->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_BVH_Tracing_at_threadNum)->RangeMultiplier(2)->Range(4,64)->Unit(benchmark::kMillisecond);
 
 
 

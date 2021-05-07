@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --time=01:20:00
-#SBATCH --nodes=2
-#SBATCH --ntasks-per-node=16
+#SBATCH --time=04:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
 #SBATCH --exclusive
-#SBATCH --job-name parRay-team7
+#SBATCH --job-name bvh-mpi-1-core
 #SBATCH -p cs
 #PBS -S ./scripts/sing_shell.sh
 
@@ -41,25 +41,27 @@ BIN_DIR=${SLURM_SUBMIT_DIR}/build/bin
 mkdir -p ${SLURM_SUBMIT_DIR}/build
 pushd ${SLURM_SUBMIT_DIR}/build
 
+lscpu
+
 echo "Compiling"
-srun --mpi=pmi2 --ntasks 1 --nnode 1  ${SING_EXEC_LOCATION} cmake ${SLURM_SUBMIT_DIR}/src && \
-srun --mpi=pmi2 --ntasks 1 --nnode 1  ${SING_EXEC_LOCATION} make
+srun --mpi=pmi2 --ntasks 1 --nodes 1  ${SING_EXEC_LOCATION} cmake ${SLURM_SUBMIT_DIR}/src && \
+srun --mpi=pmi2 --ntasks 1 --nodes 1  ${SING_EXEC_LOCATION} make
 
 echo "Run Tests"
-srun --mpi=pmi2 --ntasks 1 --nnode 1 ${SING_EXEC_LOCATION}  "${BIN_DIR}/bvh_test"
-srun --mpi=pmi2 --ntasks 1 --nnode 1 ${SING_EXEC_LOCATION}  "${BIN_DIR}/data_porting_test"
+srun --mpi=pmi2 --ntasks 1 --nodes 1 ${SING_EXEC_LOCATION}  "${BIN_DIR}/bvh_test"
+srun --mpi=pmi2 --ntasks 1 --nodes 1 ${SING_EXEC_LOCATION}  "${BIN_DIR}/data_porting_test"
 
 echo "Run Benchmarks"
-srun --mpi=pmi2 --ntasks 1 ${SING_EXEC_LOCATION}  "${BIN_DIR}/bm_ray_tracing"
-srun --mpi=pmi2 --ntasks 1 --nnode 1 ${SING_EXEC_LOCATION}  "${BIN_DIR}/gen_random_scene 10"
+#srun --mpi=pmi2 --ntasks 1 --ntasks-per-node 1  --nodes 1 --cpus-per-task 32  ${SING_EXEC_LOCATION}  "${BIN_DIR}/bm_ray_tracing"
+srun --mpi=pmi2 --ntasks 1 --nodes 1 ${SING_EXEC_LOCATION}  "${BIN_DIR}/gen_random_scene 20"
 
 
-for N_CPUS in 1 2 4 8 16
+for N_CPUS in 1
 do
 
 	#Individual MPI run
 	echo "Doing MPI CPUS = ${N_CPUS} "
 #	srun --mpi=pmi2 --ntasks-per-node ${SLURM_NTASKS_PER_NODE} --cpu-bind=cores --ntasks ${N_CPUS} ~/scratch/sing_exec.sh ./bin/bm_mpi ./random_spheres_scene.data 2
-	srun --mpi=pmi2 --cpu-bind=cores --ntasks ${N_CPUS} ${SING_EXEC_LOCATION} "${BIN_DIR}/bm_mpi ./random_spheres_scene.data 2"
+	srun --mpi=pmi2 --cpu-bind=cores --ntasks ${N_CPUS} ${SING_EXEC_LOCATION} "${BIN_DIR}/bm_mpi ./random_spheres_scene.data 1"
 done
 
