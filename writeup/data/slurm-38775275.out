@@ -1,0 +1,447 @@
+zwf5
+/var/spool/slurm/slurmd/job38775275
+/home/zwf5/ParRay
+We seem to be in the right place.
+~/ParRay/build ~/ParRay
+Compiling
+-- The CXX compiler identification is unknown
+CMake Error at CMakeLists.txt:2 (PROJECT):
+  The CMAKE_CXX_COMPILER:
+
+    /usr/bin/c++
+
+  is not a full path to an existing compiler tool.
+
+  Tell CMake where to find the compiler by setting either the environment
+  variable "CXX" or the CMake cache entry CMAKE_CXX_COMPILER to the full path
+  to the compiler, or to the compiler name if it is in the PATH.
+
+
+-- Configuring incomplete, errors occurred!
+See also "/home/zwf5/ParRay/src/CMakeFiles/CMakeOutput.log".
+See also "/home/zwf5/ParRay/src/CMakeFiles/CMakeError.log".
+srun: error: cn6: task 0: Exited with exit code 1
+Run Tests
+Running main() from /home/zwf5/ParRay/src/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 12 tests from 8 test suites.
+[----------] Global test environment set-up.
+[----------] 1 test from SanityCheck
+[ RUN      ] SanityCheck.testcase1
+[       OK ] SanityCheck.testcase1 (0 ms)
+[----------] 1 test from SanityCheck (0 ms total)
+
+[----------] 2 tests from Extent
+[ RUN      ] Extent.create_extent
+[       OK ] Extent.create_extent (0 ms)
+[ RUN      ] Extent.centroid_of_extent
+[       OK ] Extent.centroid_of_extent (0 ms)
+[----------] 2 tests from Extent (0 ms total)
+
+[----------] 1 test from BBox
+[ RUN      ] BBox.centoid_calcualtion
+[       OK ] BBox.centoid_calcualtion (0 ms)
+[----------] 1 test from BBox (0 ms total)
+
+[----------] 1 test from OctreeNode
+[ RUN      ] OctreeNode.calculate_child_box
+[       OK ] OctreeNode.calculate_child_box (0 ms)
+[----------] 1 test from OctreeNode (0 ms total)
+
+[----------] 3 tests from Octree
+[ RUN      ] Octree.calculate_childbox_at_index
+[       OK ] Octree.calculate_childbox_at_index (0 ms)
+[ RUN      ] Octree.insert_object
+[       OK ] Octree.insert_object (0 ms)
+[ RUN      ] Octree.bottom_up_build
+[       OK ] Octree.bottom_up_build (0 ms)
+[----------] 3 tests from Octree (0 ms total)
+
+[----------] 2 tests from bvh
+[ RUN      ] bvh.create_BVH_1_object
+[       OK ] bvh.create_BVH_1_object (0 ms)
+[ RUN      ] bvh.create_BVH_1_object_b
+[       OK ] bvh.create_BVH_1_object_b (0 ms)
+[----------] 2 tests from bvh (0 ms total)
+
+[----------] 1 test from ray_tracing
+[ RUN      ] ray_tracing.tile_indexes_calculation
+[       OK ] ray_tracing.tile_indexes_calculation (0 ms)
+[----------] 1 test from ray_tracing (0 ms total)
+
+[----------] 1 test from Boundable_sphere
+[ RUN      ] Boundable_sphere.calculate_bounds1
+[       OK ] Boundable_sphere.calculate_bounds1 (0 ms)
+[----------] 1 test from Boundable_sphere (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 8 test suites ran. (0 ms total)
+[  PASSED  ] 12 tests.
+Running main() from /home/zwf5/ParRay/src/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 7 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 5 tests from serializing
+[ RUN      ] serializing.color
+[       OK ] serializing.color (0 ms)
+[ RUN      ] serializing.metal
+[       OK ] serializing.metal (0 ms)
+[ RUN      ] serializing.lambertian
+[       OK ] serializing.lambertian (0 ms)
+[ RUN      ] serializing.dielectric
+[       OK ] serializing.dielectric (0 ms)
+[ RUN      ] serializing.sphere
+[       OK ] serializing.sphere (0 ms)
+[----------] 5 tests from serializing (0 ms total)
+
+[----------] 2 tests from deserializing
+[ RUN      ] deserializing.sphere
+[       OK ] deserializing.sphere (0 ms)
+[ RUN      ] deserializing.Sphere
+[       OK ] deserializing.Sphere (0 ms)
+[----------] 2 tests from deserializing (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 7 tests from 2 test suites ran. (0 ms total)
+[  PASSED  ] 7 tests.
+Run Benchmarks
+1603 records are generated.
+N_NODES=1, N_CPU=4
+srun: Warning: can't run 1 processes on 4 nodes, setting nnodes to 1
+Rendering scene ./random_spheres_scene.data using 4 threads
+2021-05-06T21:21:42-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi
+Run on (64 X 3344.91 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 0.13, 2.54, 8.34
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time             92017 ms        91672 ms            1 process0=92.0029
+mpi_benchmark/repeats:4/manual_time             92408 ms        91860 ms            1 process0=92.4053
+mpi_benchmark/repeats:4/manual_time             92552 ms        92248 ms            1 process0=92.5513
+mpi_benchmark/repeats:4/manual_time             92492 ms        92012 ms            1 process0=92.4914
+mpi_benchmark/repeats:4/manual_time_mean        92367 ms        91948 ms            4 process0=92.3627
+mpi_benchmark/repeats:4/manual_time_median      92450 ms        91936 ms            4 process0=92.4484
+mpi_benchmark/repeats:4/manual_time_stddev        241 ms          243 ms            4 process0=0.247264
+
+Done.
+N_NODES=1, N_CPU=8
+srun: Warning: can't run 1 processes on 4 nodes, setting nnodes to 1
+Rendering scene ./random_spheres_scene.data using 8 threads
+2021-05-06T21:27:54-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi
+Run on (64 X 3345.94 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 3.72, 3.50, 6.85
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time             46224 ms        46002 ms            1 process0=46.2093
+mpi_benchmark/repeats:4/manual_time             46246 ms        45709 ms            1 process0=46.2425
+mpi_benchmark/repeats:4/manual_time             46217 ms        46028 ms            1 process0=46.2167
+mpi_benchmark/repeats:4/manual_time             46262 ms        45772 ms            1 process0=46.2612
+mpi_benchmark/repeats:4/manual_time_mean        46237 ms        45878 ms            4 process0=46.2324
+mpi_benchmark/repeats:4/manual_time_median      46235 ms        45887 ms            4 process0=46.2296
+mpi_benchmark/repeats:4/manual_time_stddev       20.6 ms          161 ms            4 process0=0.023873
+
+Done.
+N_NODES=1, N_CPU=16
+srun: Warning: can't run 1 processes on 4 nodes, setting nnodes to 1
+Rendering scene ./random_spheres_scene.data using 16 threads
+2021-05-06T21:31:00-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi
+Run on (64 X 3398.15 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 7.65, 5.55, 7.06
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time             23345 ms        22880 ms            1 process0=23.3296
+mpi_benchmark/repeats:4/manual_time             23338 ms        22832 ms            1 process0=23.3342
+mpi_benchmark/repeats:4/manual_time             23380 ms        23278 ms            1 process0=23.3796
+mpi_benchmark/repeats:4/manual_time             23427 ms        22993 ms            1 process0=23.4265
+mpi_benchmark/repeats:4/manual_time_mean        23372 ms        22996 ms            4 process0=23.3675
+mpi_benchmark/repeats:4/manual_time_median      23362 ms        22936 ms            4 process0=23.3569
+mpi_benchmark/repeats:4/manual_time_stddev       40.8 ms          200 ms            4 process0=0.0453665
+
+Done.
+N_NODES=1, N_CPU=32
+srun: Warning: can't run 1 processes on 4 nodes, setting nnodes to 1
+Rendering scene ./random_spheres_scene.data using 32 threads
+2021-05-06T21:32:35-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi
+Run on (64 X 3391.59 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 13.09, 8.15, 7.85
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time             11846 ms        11569 ms            1 process0=11.831
+mpi_benchmark/repeats:4/manual_time             11838 ms        11322 ms            1 process0=11.8353
+mpi_benchmark/repeats:4/manual_time             11815 ms        11396 ms            1 process0=11.8142
+mpi_benchmark/repeats:4/manual_time             11849 ms        11415 ms            1 process0=11.8491
+mpi_benchmark/repeats:4/manual_time_mean        11837 ms        11425 ms            4 process0=11.8324
+mpi_benchmark/repeats:4/manual_time_median      11842 ms        11405 ms            4 process0=11.8331
+mpi_benchmark/repeats:4/manual_time_stddev       15.8 ms          104 ms            4 process0=0.0143858
+
+Done.
+N_NODES=1, N_CPU=64
+srun: Warning: can't run 1 processes on 4 nodes, setting nnodes to 1
+Rendering scene ./random_spheres_scene.data using 64 threads
+2021-05-06T21:33:23-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi
+Run on (64 X 3390.81 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 23.08, 11.49, 8.99
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time              6122 ms         5947 ms            1 process0=6.10155
+mpi_benchmark/repeats:4/manual_time              6002 ms         5504 ms            1 process0=5.99895
+mpi_benchmark/repeats:4/manual_time              6024 ms         5597 ms            1 process0=6.02352
+mpi_benchmark/repeats:4/manual_time              6024 ms         5987 ms            1 process0=6.02334
+mpi_benchmark/repeats:4/manual_time_mean         6043 ms         5759 ms            4 process0=6.03684
+mpi_benchmark/repeats:4/manual_time_median       6024 ms         5772 ms            4 process0=6.02343
+mpi_benchmark/repeats:4/manual_time_stddev       53.5 ms          244 ms            4 process0=0.044658
+
+Done.
+N_NODES=1, N_CPU=128
+srun: Warning: can't run 2 processes on 4 nodes, setting nnodes to 2
+Rendering scene ./random_spheres_scene.data using 64 threads
+2021-05-06T21:33:48-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi
+Run on (64 X 3392.54 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 34.67, 15.11, 10.26
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time              4064 ms         3717 ms            1 process0=4.03746 process1=2.68375
+mpi_benchmark/repeats:4/manual_time              3843 ms         3397 ms            1 process0=3.83374 process1=2.6136
+mpi_benchmark/repeats:4/manual_time              3810 ms         3374 ms            1 process0=3.80985 process1=2.62336
+mpi_benchmark/repeats:4/manual_time              4100 ms         3860 ms            1 process0=4.09933 process1=2.61258
+mpi_benchmark/repeats:4/manual_time_mean         3954 ms         3587 ms            4 process0=3.9451 process1=2.63332
+mpi_benchmark/repeats:4/manual_time_median       3954 ms         3557 ms            4 process0=3.9356 process1=2.61848
+mpi_benchmark/repeats:4/manual_time_stddev        149 ms          240 ms            4 process0=0.144928 process1=0.0339705
+
+Done.
+N_NODES=3, N_CPU=192
+srun: Warning: can't run 3 processes on 4 nodes, setting nnodes to 3
+srun: Job 38775275 step creation temporarily disabled, retrying (Requested nodes are busy)
+srun: Step created for job 38775275
+Rendering scene ./random_spheres_scene.data using 64 threads
+2021-05-06T21:34:05-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi
+Run on (64 X 3392.59 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 38.19, 17.28, 11.08
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time              3174 ms         3080 ms            1 process0=2.5505 process1=3.12602 process2=1.43203
+mpi_benchmark/repeats:4/manual_time              3085 ms         2613 ms            1 process0=2.44804 process1=3.07982 process2=1.34906
+mpi_benchmark/repeats:4/manual_time              3086 ms         2609 ms            1 process0=2.43856 process1=3.08053 process2=1.37246
+mpi_benchmark/repeats:4/manual_time              3121 ms         2621 ms            1 process0=2.44711 process1=3.11965 process2=1.39721
+mpi_benchmark/repeats:4/manual_time_mean         3116 ms         2731 ms            4 process0=2.47105 process1=3.1015 process2=1.38769
+mpi_benchmark/repeats:4/manual_time_median       3104 ms         2617 ms            4 process0=2.44758 process1=3.10009 process2=1.38484
+mpi_benchmark/repeats:4/manual_time_stddev       41.6 ms          233 ms            4 process0=0.0531344 process1=0.0247684 process2=0.0355005
+
+Done.
+BM_LB N_NODES=1, N_CPU=4
+srun: Warning: can't run 2 processes on 4 nodes, setting nnodes to 2
+Rendering scene ./random_spheres_scene.data using 4 threads
+2021-05-06T21:34:18-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi_lb
+Run on (64 X 3093.19 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 37.12, 17.77, 11.31
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time             95462 ms         35.3 ms            1 process0=95.4387 process1=95.4183
+mpi_benchmark/repeats:4/manual_time             95762 ms         6.37 ms            1 process0=95.7559 process1=95.7559
+mpi_benchmark/repeats:4/manual_time             95752 ms         6.79 ms            1 process0=95.7455 process1=95.7455
+mpi_benchmark/repeats:4/manual_time             95913 ms         8.56 ms            1 process0=95.9046 process1=95.9046
+mpi_benchmark/repeats:4/manual_time_mean        95722 ms         14.2 ms            4 process0=95.7112 process1=95.7061
+mpi_benchmark/repeats:4/manual_time_median      95757 ms         7.67 ms            4 process0=95.7507 process1=95.7507
+mpi_benchmark/repeats:4/manual_time_stddev        188 ms         14.0 ms            4 process0=0.195653 process1=0.205162
+
+Done.
+BM_LB N_NODES=1, N_CPU=8
+srun: Warning: can't run 2 processes on 4 nodes, setting nnodes to 2
+Rendering scene ./random_spheres_scene.data using 8 threads
+2021-05-06T21:40:44-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi_lb
+Run on (64 X 2839.45 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 1.06, 5.62, 7.80
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time             48070 ms         35.2 ms            1 process0=48.0458 process1=48.0256
+mpi_benchmark/repeats:4/manual_time             47990 ms         6.92 ms            1 process0=47.9827 process1=47.9828
+mpi_benchmark/repeats:4/manual_time             48133 ms         6.18 ms            1 process0=48.127 process1=48.1272
+mpi_benchmark/repeats:4/manual_time             48267 ms         27.9 ms            1 process0=48.2394 process1=48.2394
+mpi_benchmark/repeats:4/manual_time_mean        48115 ms         19.1 ms            4 process0=48.0987 process1=48.0938
+mpi_benchmark/repeats:4/manual_time_median      48101 ms         17.4 ms            4 process0=48.0864 process1=48.0764
+mpi_benchmark/repeats:4/manual_time_stddev        117 ms         14.7 ms            4 process0=0.110826 process1=0.114448
+
+Done.
+BM_LB N_NODES=1, N_CPU=16
+srun: Warning: can't run 2 processes on 4 nodes, setting nnodes to 2
+Rendering scene ./random_spheres_scene.data using 16 threads
+2021-05-06T21:43:57-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi_lb
+Run on (64 X 3281.97 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 0.16, 0.18, 0.33
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time             24285 ms         34.0 ms            1 process0=24.2624 process1=24.2424
+mpi_benchmark/repeats:4/manual_time             24322 ms         7.09 ms            1 process0=24.3152 process1=24.3154
+mpi_benchmark/repeats:4/manual_time             24272 ms         5.93 ms            1 process0=24.2664 process1=24.2666
+mpi_benchmark/repeats:4/manual_time             24323 ms         5.68 ms            1 process0=24.3168 process1=24.317
+mpi_benchmark/repeats:4/manual_time_mean        24301 ms         13.2 ms            4 process0=24.2902 process1=24.2853
+mpi_benchmark/repeats:4/manual_time_median      24304 ms         6.51 ms            4 process0=24.2908 process1=24.291
+mpi_benchmark/repeats:4/manual_time_stddev       25.8 ms         13.9 ms            4 process0=0.0298473 process1=0.0369676
+
+Done.
+BM_LB N_NODES=1, N_CPU=32
+srun: Warning: can't run 2 processes on 4 nodes, setting nnodes to 2
+Rendering scene ./random_spheres_scene.data using 32 threads
+2021-05-06T21:45:37-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi_lb
+Run on (64 X 3392.72 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 0.19, 2.43, 5.83
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time             12371 ms         37.1 ms            1 process0=12.3469 process1=12.3271
+mpi_benchmark/repeats:4/manual_time             12345 ms         6.35 ms            1 process0=12.3389 process1=12.3395
+mpi_benchmark/repeats:4/manual_time             12331 ms         6.22 ms            1 process0=12.3248 process1=12.3254
+mpi_benchmark/repeats:4/manual_time             12348 ms         8.20 ms            1 process0=12.3401 process1=12.3406
+mpi_benchmark/repeats:4/manual_time_mean        12349 ms         14.5 ms            4 process0=12.3377 process1=12.3331
+mpi_benchmark/repeats:4/manual_time_median      12347 ms         7.28 ms            4 process0=12.3395 process1=12.3333
+mpi_benchmark/repeats:4/manual_time_stddev       16.8 ms         15.1 ms            4 process0=9.27932m process1=8.01907m
+
+Done.
+BM_LB N_NODES=1, N_CPU=64
+srun: Warning: can't run 2 processes on 4 nodes, setting nnodes to 2
+Rendering scene ./random_spheres_scene.data using 64 threads
+2021-05-06T21:46:28-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi_lb
+Run on (64 X 2979.96 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 0.33, 0.33, 0.37
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time              6370 ms         35.2 ms            1 process0=6.3462 process1=6.32717
+mpi_benchmark/repeats:4/manual_time              6463 ms         7.55 ms            1 process0=6.45513 process1=6.45656
+mpi_benchmark/repeats:4/manual_time              6509 ms         6.66 ms            1 process0=6.50278 process1=6.5041
+mpi_benchmark/repeats:4/manual_time              6412 ms         6.20 ms            1 process0=6.40552 process1=6.40692
+mpi_benchmark/repeats:4/manual_time_mean         6438 ms         13.9 ms            4 process0=6.42741 process1=6.42369
+mpi_benchmark/repeats:4/manual_time_median       6437 ms         7.10 ms            4 process0=6.43032 process1=6.43174
+mpi_benchmark/repeats:4/manual_time_stddev       60.5 ms         14.2 ms            4 process0=0.0671408 process1=0.075594
+
+Done.
+BM_LB N_NODES=1, N_CPU=128
+srun: Warning: can't run 3 processes on 4 nodes, setting nnodes to 3
+srun: Job 38775275 step creation temporarily disabled, retrying (Requested nodes are busy)
+srun: Step created for job 38775275
+Rendering scene ./random_spheres_scene.data using 64 threads
+2021-05-06T21:46:54-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi_lb
+Run on (64 X 3311.32 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 0.39, 1.99, 5.40
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time              4736 ms         35.5 ms            1 process0=4.70782 process1=4.68867 process2=4.10564
+mpi_benchmark/repeats:4/manual_time              4715 ms         27.4 ms            1 process0=4.68711 process1=4.13096 process2=4.71049
+mpi_benchmark/repeats:4/manual_time              4726 ms         5.00 ms            1 process0=4.72134 process1=4.72237 process2=4.13252
+mpi_benchmark/repeats:4/manual_time              4729 ms         4.58 ms            1 process0=4.72404 process1=4.11999 process2=4.72536
+mpi_benchmark/repeats:4/manual_time_mean         4726 ms         18.1 ms            4 process0=4.71008 process1=4.4155 process2=4.4185
+mpi_benchmark/repeats:4/manual_time_median       4727 ms         16.2 ms            4 process0=4.71458 process1=4.40982 process2=4.4215
+mpi_benchmark/repeats:4/manual_time_stddev       8.97 ms         15.7 ms            4 process0=0.0168727 process1=0.3352 process2=0.345968
+
+Done.
+BM_LB N_NODES=3, N_CPU=192
+srun: Job 38775275 step creation temporarily disabled, retrying (Requested nodes are busy)
+srun: Step created for job 38775275
+Rendering scene ./random_spheres_scene.data using 64 threads
+2021-05-06T21:47:14-07:00
+Running /home/zwf5/ParRay/src/bin/bm_mpi_lb
+Run on (64 X 3392.31 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x64)
+  L1 Instruction 32 KiB (x64)
+  L2 Unified 512 KiB (x64)
+  L3 Unified 16384 KiB (x16)
+Load Average: 0.57, 1.93, 5.30
+-----------------------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations UserCounters...
+-----------------------------------------------------------------------------------------------------
+mpi_benchmark/repeats:4/manual_time              3142 ms         43.3 ms            1 process0=3.11121 process1=2.92215 process2=3.09332 process3=2.74572
+mpi_benchmark/repeats:4/manual_time              3099 ms         5.90 ms            1 process0=3.09342 process1=2.73549 process2=3.09465 process3=2.92297
+mpi_benchmark/repeats:4/manual_time              3121 ms         4.54 ms            1 process0=3.11707 process1=2.8151 process2=3.11822 process3=2.92454
+mpi_benchmark/repeats:4/manual_time              3112 ms         4.10 ms            1 process0=3.10823 process1=2.75175 process2=3.10916 process3=2.93968
+mpi_benchmark/repeats:4/manual_time_mean         3119 ms         14.5 ms            4 process0=3.10748 process1=2.80612 process2=3.10383 process3=2.88322
+mpi_benchmark/repeats:4/manual_time_median       3117 ms         5.22 ms            4 process0=3.10972 process1=2.78342 process2=3.1019 process3=2.92375
+mpi_benchmark/repeats:4/manual_time_stddev       18.0 ms         19.2 ms            4 process0=0.0100698 process1=0.0846342 process2=0.0119749 process3=0.0919798
+
+Done.
