@@ -1,10 +1,4 @@
-#ifndef COLOR_HH_INCLUDED
-#define COLOR_HH_INCLUDED
-
-#include "vec3.h"
-#include "common.h"
-#include <iostream>
-
+#include "color.h"
 void write_color(std::ostream &out, color pixel_color, int samples_per_pixel)
 {
   auto r = pixel_color.x();
@@ -20,6 +14,3 @@ void write_color(std::ostream &out, color pixel_color, int samples_per_pixel)
       << static_cast<int>(256 * clamp(g, 0.0, 0.999)) << ' '
       << static_cast<int>(256 * clamp(b, 0.0, 0.999)) << '\n';
 }
-
-
-#endif // color_hh_included
